@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Blacklist User - NesRent Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#d9e3f6",
+                    "on-tertiary-container": "#5d5f61",
+                    "outline-variant": "#d0c6ab",
+                    "on-secondary-container": "#596373",
+                    "on-surface": "#191c1d",
+                    "secondary": "#555f6f",
+                    "surface-container-low": "#f3f4f5",
+                    "inverse-on-surface": "#f0f1f2",
+                    "on-tertiary-fixed": "#191c1e",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-container": "#705e00",
+                    "on-secondary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#e9c400",
+                    "tertiary-fixed": "#e1e2e4",
+                    "on-secondary-fixed": "#121c2a",
+                    "primary-fixed-dim": "#e9c400",
+                    "surface-container-high": "#e7e8e9",
+                    "on-background": "#191c1d",
+                    "surface": "#f8f9fa",
+                    "surface-variant": "#e1e3e4",
+                    "inverse-surface": "#2e3132",
+                    "primary-fixed": "#ffe16d",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-primary-fixed": "#221b00",
+                    "tertiary-fixed-dim": "#c5c6c8",
+                    "background": "#f8f9fa",
+                    "tertiary": "#5c5f60",
+                    "primary": "#705d00",
+                    "surface-dim": "#d9dadb",
+                    "on-error": "#ffffff",
+                    "tertiary-container": "#d9dadc",
+                    "surface-container": "#edeeef",
+                    "outline": "#7e775f",
+                    "secondary-fixed-dim": "#bdc7d9",
+                    "on-tertiary-fixed-variant": "#444749",
+                    "on-primary-fixed-variant": "#544600",
+                    "error": "#ba1a1a",
+                    "surface-tint": "#705d00",
+                    "on-surface-variant": "#4d4732",
+                    "surface-container-highest": "#e1e3e4",
+                    "primary-container": "#ffd700",
+                    "secondary-container": "#d6e0f3",
+                    "surface-bright": "#f8f9fa",
+                    "on-secondary-fixed-variant": "#3d4756"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "24px",
+                    "base": "8px",
+                    "xs": "4px",
+                    "lg": "48px",
+                    "container-max": "1280px",
+                    "sm": "12px",
+                    "gutter": "24px",
+                    "xl": "80px"
+            },
+            "fontFamily": {
+                    "h2": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "label-md": [
+                            "Inter"
+                    ],
+                    "h3": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "h1": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "caption": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "h2": [
+                            "32px",
+                            {
+                                    "lineHeight": "1.25",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "h3": [
+                            "24px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "h1": [
+                            "40px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "caption": [
+                            "12px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "500"
+                            }
+                    ]
+            }
+          }
+        }
+      }
+    </script>
+</head>
+<body class="bg-background min-h-screen font-body-md text-on-surface flex">
+<!-- SideNavBar -->
+<nav class="bg-surface-container-lowest dark:bg-inverse-surface shadow-lg h-screen w-64 flex flex-col fixed left-0 top-0 hidden md:flex z-50">
+<div class="p-md flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="real_estate_agent">real_estate_agent</span>
+</div>
+<div>
+<h1 class="font-h3 text-h3 font-black text-primary dark:text-primary-fixed tracking-tight">NesRent</h1>
+<p class="font-caption text-caption text-on-surface-variant">Admin Portal</p>
+</div>
+</div>
+<div class="px-md pb-md">
+<button class="w-full bg-primary-container hover:bg-primary text-on-primary-container hover:text-on-primary transition-colors py-3 rounded-xl font-label-md text-label-md flex justify-center items-center gap-xs shadow-sm">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+                Add New Listing
+            </button>
+</div>
+<div class="flex flex-col gap-base h-full py-md overflow-y-auto border-r border-outline-variant/30 flex-1">
+<a class="text-secondary dark:text-secondary-fixed-dim px-4 py-3 mx-2 flex items-center gap-3 hover:bg-secondary-container dark:hover:bg-secondary-fixed-dim/20 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="text-secondary dark:text-secondary-fixed-dim px-4 py-3 mx-2 flex items-center gap-3 hover:bg-secondary-container dark:hover:bg-secondary-fixed-dim/20 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-label-md text-label-md">Manajemen Barang</span>
+</a>
+<a class="text-secondary dark:text-secondary-fixed-dim px-4 py-3 mx-2 flex items-center gap-3 hover:bg-secondary-container dark:hover:bg-secondary-fixed-dim/20 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span class="font-label-md text-label-md">Verifikasi User</span>
+</a>
+<a class="text-secondary dark:text-secondary-fixed-dim px-4 py-3 mx-2 flex items-center gap-3 hover:bg-secondary-container dark:hover:bg-secondary-fixed-dim/20 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-md text-label-md">Transaksi</span>
+</a>
+<a class="bg-primary-container text-on-primary-container font-bold rounded-xl px-4 py-3 mx-2 flex items-center gap-3 translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="block" data-weight="fill" style="font-variation-settings: 'FILL' 1;">block</span>
+<span class="font-label-md text-label-md">Blacklist</span>
+</a>
+<a class="text-secondary dark:text-secondary-fixed-dim px-4 py-3 mx-2 flex items-center gap-3 hover:bg-secondary-container dark:hover:bg-secondary-fixed-dim/20 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+<div class="mt-auto p-4 border-t border-outline-variant/30">
+<a class="text-error px-4 py-3 flex items-center gap-3 hover:bg-error-container rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Log Out</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col md:ml-64 w-full">
+<!-- TopNavBar (Mobile Only for Top Nav logic, Desktop acts as Header) -->
+<header class="bg-surface dark:bg-surface-dim shadow-md md:shadow-none md:border-b border-outline-variant/20 flex justify-between items-center px-md py-base w-full sticky top-0 z-40 h-[72px]">
+<div class="flex items-center gap-sm md:hidden">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<span class="font-h3 text-h3 font-extrabold text-primary dark:text-primary-fixed">NesRent</span>
+</div>
+<!-- Contextual Header Title for Desktop -->
+<div class="hidden md:block">
+<h2 class="font-body-lg text-body-lg font-semibold text-on-surface">Blacklist Management</h2>
+</div>
+<div class="flex items-center gap-4 ml-auto">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-full relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-full">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-surface-container-highest ml-2">
+<img alt="Admin Avatar" class="w-full h-full object-cover" data-alt="A close-up portrait of a professional administrator, warmly smiling. The lighting is bright and modern, set against a pristine light-gray background. The overall aesthetic is clean and corporate, matching a light-mode SaaS application style. The individual wears professional yet approachable attire." src="https://lh3.googleusercontent.com/aida/ADBb0uhpdApwkfHA_CWRdIaecUXwpQ2S5SNlK8rIaaRXqn-7Q8bNAJcZyqIxZ0d0MsuJg_oRISJ1oCrcFVspLaDNzVIKfinL9ZJkz7LCeFg70KJmifcSGMccGVGXwoXkhidpEbZbZypdsylLJmOfET7EDrlQ2gqkpynWpKgF0WPTI5xVMoz4c-VAqXJaOpGWAzCKx0y1gRUhxWfUgc3bicLKP5cb2LrG2pOERNyxZEIih6INxPL_ZMyuU3xeISlVYSK9T0gCxpanjXVlDuQ"/>
+</div>
+</div>
+</header>
+<!-- Page Content Canvas -->
+<main class="flex-1 p-md md:p-lg max-w-container-max mx-auto w-full overflow-x-hidden">
+<!-- Page Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-sm mb-lg">
+<div>
+<h1 class="font-h1 text-h1 text-on-surface mb-xs">Blacklist User</h1>
+<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-error" data-icon="warning" data-weight="fill" style="font-variation-settings: 'FILL' 1;">warning</span>
+                        Kelola pengguna yang diblokir
+                    </p>
+</div>
+<button class="bg-error hover:bg-error/90 text-on-error font-label-md text-label-md py-3 px-6 rounded-[16px] flex items-center gap-2 shadow-sm transition-transform hover:-translate-y-0.5 whitespace-nowrap">
+<span class="material-symbols-outlined text-[20px]" data-icon="add">add</span>
+                    Tambah Blacklist
+                </button>
+</div>
+<!-- Filters & Search Bar -->
+<div class="bg-surface-container-lowest rounded-[24px] p-md mb-md shadow-[0_4px_20px_rgba(31,41,55,0.04)] flex flex-col lg:flex-row justify-between gap-md items-center border border-outline-variant/10">
+<!-- Tabs -->
+<div class="flex bg-surface-container-low p-1 rounded-[16px] w-full lg:w-auto overflow-x-auto hide-scrollbar">
+<button class="px-6 py-2 rounded-[12px] bg-surface-container-lowest shadow-sm font-label-md text-label-md text-on-surface whitespace-nowrap">Semua</button>
+<button class="px-6 py-2 rounded-[12px] font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container/50 transition-colors whitespace-nowrap">Aktif (diblokir)</button>
+<button class="px-6 py-2 rounded-[12px] font-body-md text-body-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container/50 transition-colors whitespace-nowrap">Sudah dilepas</button>
+</div>
+<!-- Search -->
+<div class="relative w-full lg:w-96">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full bg-surface py-3 pl-12 pr-4 rounded-[12px] border border-surface-variant focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant transition-all shadow-inner" placeholder="Cari nama / NIM..." type="text"/>
+</div>
+</div>
+<!-- Data Table Card -->
+<div class="bg-surface-container-lowest rounded-[24px] shadow-[0_4px_20px_rgba(31,41,55,0.04)] border border-outline-variant/10 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant/20 bg-surface/50">
+<th class="py-4 px-6 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Nama User</th>
+<th class="py-4 px-6 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">NIM</th>
+<th class="py-4 px-6 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Alasan Blacklist</th>
+<th class="py-4 px-6 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Tanggal Diblokir</th>
+<th class="py-4 px-6 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="py-4 px-6 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-right">Aksi</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-4 px-6">
+<div class="flex items-center gap-3"><span class="font-label-md text-label-md text-on-surface">Budi Santoso</span></div>
+</td>
+<td class="py-4 px-6 font-body-md text-body-md text-secondary">5112421001</td>
+<td class="py-4 px-6">
+<span class="font-body-md text-body-md text-on-surface">Melakukan penipuan pembayaran</span>
+</td>
+<td class="py-4 px-6 font-body-md text-body-md text-secondary">15 Okt 2024</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-error-container/30 text-error font-label-md text-[12px]">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                                        Aktif
+                                    </span>
+</td>
+<td class="py-4 px-6 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary-container/20 rounded-full transition-colors" title="Lihat Detail">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-error hover:bg-error-container/20 rounded-full transition-colors" title="Lepas dari Blacklist">
+<span class="material-symbols-outlined text-[20px]" data-icon="person_add_disabled">person_add_disabled</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-4 px-6">
+<div class="flex items-center gap-3"><span class="font-label-md text-label-md text-on-surface">Andi Wijaya</span></div>
+</td>
+<td class="py-4 px-6 font-body-md text-body-md text-secondary">5112421045</td>
+<td class="py-4 px-6">
+<span class="font-body-md text-body-md text-on-surface">Merusak barang sewaan</span>
+</td>
+<td class="py-4 px-6 font-body-md text-body-md text-secondary">12 Okt 2024</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-error-container/30 text-error font-label-md text-[12px]">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                                        Aktif
+                                    </span>
+</td>
+<td class="py-4 px-6 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary-container/20 rounded-full transition-colors" title="Lihat Detail">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-error hover:bg-error-container/20 rounded-full transition-colors" title="Lepas dari Blacklist">
+<span class="material-symbols-outlined text-[20px]" data-icon="person_add_disabled">person_add_disabled</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group bg-surface/30">
+<td class="py-4 px-6">
+<div class="flex items-center gap-3"><span class="font-label-md text-label-md text-on-surface-variant">Siti Aminah</span></div>
+</td>
+<td class="py-4 px-6 font-body-md text-body-md text-outline">5112421088</td>
+<td class="py-4 px-6">
+<span class="font-body-md text-body-md text-on-surface-variant line-through opacity-70">Akun palsu/spam</span>
+</td>
+<td class="py-4 px-6 font-body-md text-body-md text-outline">10 Okt 2024</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-variant/50 text-on-surface-variant font-label-md text-[12px]">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                                        Dilepas
+                                    </span>
+</td>
+<td class="py-4 px-6 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-primary-container/20 rounded-full transition-colors" title="Lihat Detail">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="border-t border-outline-variant/20 p-4 flex justify-between items-center bg-surface-container-lowest">
+<span class="font-caption text-caption text-on-surface-variant">Menampilkan 1 - 3 dari 3 data</span>
+<div class="flex gap-1">
+<button class="p-2 rounded-lg text-outline cursor-not-allowed">
+<span class="material-symbols-outlined text-[20px]" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="p-2 rounded-lg text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

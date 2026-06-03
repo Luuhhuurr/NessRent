@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NesRent - Student Rental Platform</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#93000a",
+                        "on-surface": "#191c1d",
+                        "on-primary-fixed": "#221b00",
+                        "background": "#f8f9fa",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#d9dadc",
+                        "tertiary-fixed": "#e1e2e4",
+                        "surface-container-highest": "#e1e3e4",
+                        "tertiary-fixed-dim": "#c5c6c8",
+                        "surface-bright": "#f8f9fa",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "surface-dim": "#d9dadb",
+                        "on-primary-container": "#705e00",
+                        "surface": "#f8f9fa",
+                        "on-tertiary-container": "#5d5f61",
+                        "on-secondary-container": "#596373",
+                        "inverse-primary": "#e9c400",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed": "#121c2a",
+                        "tertiary": "#5c5f60",
+                        "surface-variant": "#e1e3e4",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed": "#ffe16d",
+                        "on-tertiary-fixed": "#191c1e",
+                        "surface-container": "#edeeef",
+                        "on-secondary-fixed-variant": "#3d4756",
+                        "primary-container": "#ffd700",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#bdc7d9",
+                        "secondary": "#555f6f",
+                        "error": "#ba1a1a",
+                        "inverse-surface": "#2e3132",
+                        "outline": "#7e775f",
+                        "on-surface-variant": "#4d4732",
+                        "surface-tint": "#705d00",
+                        "outline-variant": "#d0c6ab",
+                        "primary-fixed-dim": "#e9c400",
+                        "secondary-fixed": "#d9e3f6",
+                        "on-background": "#191c1d",
+                        "secondary-container": "#d6e0f3",
+                        "surface-container-low": "#f3f4f5",
+                        "primary": "#705d00",
+                        "on-primary-fixed-variant": "#544600",
+                        "surface-container-high": "#e7e8e9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "lg": "48px",
+                        "gutter": "24px",
+                        "sm": "12px",
+                        "xs": "4px",
+                        "container-max": "1280px",
+                        "xl": "80px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "h1": ["Plus Jakarta Sans"],
+                        "body-md": ["Inter"],
+                        "h2": ["Plus Jakarta Sans"],
+                        "caption": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "h3": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "h1": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "h2": ["32px", {"lineHeight": "1.25", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "caption": ["12px", {"lineHeight": "1.2", "fontWeight": "500"}],
+                        "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "h3": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md antialiased overflow-x-hidden">
+<!-- TopNavBar Component -->
+<nav class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-md dark:bg-surface-dim/90 shadow-sm dark:shadow-none font-body-md text-body-md tracking-tight">
+<div class="flex justify-between items-center px-gutter py-4 max-w-container-max mx-auto">
+<a class="text-h3 font-h3 font-extrabold text-primary dark:text-primary-fixed-dim hover:opacity-80 transition-all duration-300" href="#">NesRent</a>
+<div class="hidden md:flex items-center gap-md">
+<a class="text-primary dark:text-primary-fixed-dim font-bold border-b-2 border-primary pb-1 hover:opacity-80 transition-all duration-300" href="#">Home</a>
+<a class="text-secondary dark:text-secondary-fixed-dim font-medium hover:text-primary transition-colors hover:opacity-80 transition-all duration-300" href="#">Barang</a>
+<a class="text-secondary dark:text-secondary-fixed-dim font-medium hover:text-primary transition-colors hover:opacity-80 transition-all duration-300" href="#">Cara Kerja</a>
+<a class="text-secondary dark:text-secondary-fixed-dim font-medium hover:text-primary transition-colors hover:opacity-80 transition-all duration-300" href="#">Tentang</a>
+</div>
+<div class="flex items-center gap-sm">
+<button class="font-label-md text-label-md px-md py-sm rounded-xl border border-on-surface text-on-surface hover:bg-surface-container-low transition-colors duration-300">Login</button>
+<button class="font-label-md text-label-md px-md py-sm rounded-xl bg-primary-container text-on-primary-container hover:opacity-80 transition-all duration-300">Mulai Sewa</button>
+</div>
+</div>
+</nav>
+<main class="pt-[80px]"> <!-- Offset for fixed nav -->
+<!-- Hero Section -->
+<section class="py-xl px-gutter max-w-container-max mx-auto flex flex-col md:flex-row items-center gap-lg">
+<div class="flex-1 flex flex-col gap-md items-start">
+<h1 class="font-h1 text-h1 text-on-surface">Cara Termudah Menyewa Barang untuk Mahasiswa</h1>
+<p class="font-body-lg text-body-lg text-secondary">Platform rental khusus mahasiswa UNNES. Sewa jas, kamera, hingga motor dengan harga terjangkau dan proses yang mudah.</p>
+<div class="flex flex-wrap gap-sm pt-sm">
+<button class="font-label-md text-label-md px-md py-sm rounded-xl bg-primary-container text-on-primary-container hover:opacity-80 transition-all duration-300 shadow-[0_4px_20px_0_rgba(31,41,55,0.04)] hover:-translate-y-1">Mulai Sekarang</button>
+<button class="font-label-md text-label-md px-md py-sm rounded-xl border border-on-surface text-on-surface hover:bg-surface-container-low transition-colors duration-300">Lihat Barang</button>
+</div>
+</div>
+<div class="flex-1 w-full rounded-[24px] overflow-hidden shadow-[0_4px_20px_0_rgba(31,41,55,0.04)]">
+<img alt="Students with rental items" class="w-full h-[400px] object-cover rounded-[24px]" data-alt="A bright, modern illustration-style photograph showing a diverse group of university students laughing and interacting outdoors on a sunny campus. One student is holding a professional camera, while another wears a sharp formal jacket. The lighting is soft and natural, enhancing a playful, optimistic mood. The color palette features pops of vibrant yellow against clean, light backgrounds, reflecting a friendly and accessible student rental platform aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzaYdfVhFU0_xVUGOozmJADU3trABnTMO5tTcr_p9Q8NFO3l2AhDZuGdCW1GP-r6M7dSs88vQKTTPkw8FOkouducEZ9_B1qUzNdFjFRXmRHmVGpPcjAccett0RN_ySpwBSXG_S1fzNhmVrfJDj9TVfrY8BuElL--NUbiuHqdnWuYgiW82gEiJ4rSIhAnYGz29G1Sztbc5E6toqHiqCHbatx6e0gYlbwyb5-PBppFXjJImuhq8TwtrzrrwXabKVBB9lJAYRUTtkg4YO"/>
+</div>
+</section>
+<!-- Spacer -->
+<div class="h-lg"></div>
+<!-- Categories Section -->
+<section class="py-lg px-gutter bg-surface-container-low">
+<div class="max-w-container-max mx-auto">
+<h2 class="font-h2 text-h2 text-on-surface mb-lg text-center">Kategori Barang</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-md">
+<div class="bg-surface rounded-[24px] p-md flex flex-col items-center gap-sm shadow-[0_4px_20px_0_rgba(31,41,55,0.04)] hover:shadow-[0_8px_24px_0_rgba(31,41,55,0.1)] hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+<span class="material-symbols-outlined text-primary text-[48px]">checkroom</span>
+<span class="font-label-md text-label-md text-on-surface">Jas</span>
+</div>
+<div class="bg-surface rounded-[24px] p-md flex flex-col items-center gap-sm shadow-[0_4px_20px_0_rgba(31,41,55,0.04)] hover:shadow-[0_8px_24px_0_rgba(31,41,55,0.1)] hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+<span class="material-symbols-outlined text-primary text-[48px]">photo_camera</span>
+<span class="font-label-md text-label-md text-on-surface">Kamera</span>
+</div>
+<div class="bg-surface rounded-[24px] p-md flex flex-col items-center gap-sm shadow-[0_4px_20px_0_rgba(31,41,55,0.04)] hover:shadow-[0_8px_24px_0_rgba(31,41,55,0.1)] hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+<span class="material-symbols-outlined text-primary text-[48px]">two_wheeler</span>
+<span class="font-label-md text-label-md text-on-surface">Motor</span>
+</div>
+<div class="bg-surface rounded-[24px] p-md flex flex-col items-center gap-sm shadow-[0_4px_20px_0_rgba(31,41,55,0.04)] hover:shadow-[0_8px_24px_0_rgba(31,41,55,0.1)] hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+<span class="material-symbols-outlined text-primary text-[48px]">speaker</span>
+<span class="font-label-md text-label-md text-on-surface">Sound System</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Spacer -->
+<div class="h-lg"></div>
+<!-- How It Works Section -->
+<section class="py-xl px-gutter max-w-container-max mx-auto">
+<h2 class="font-h2 text-h2 text-on-surface mb-lg text-center">Cara Kerja</h2>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-md relative">
+<!-- Connecting line for desktop -->
+<div class="hidden md:block absolute top-[40px] left-[12%] right-[12%] h-[2px] bg-tertiary-container z-0"></div>
+<div class="flex flex-col items-center text-center gap-sm z-10 relative">
+<div class="w-[80px] h-[80px] rounded-full bg-primary-container flex items-center justify-center shadow-[0_4px_20px_0_rgba(31,41,55,0.04)]">
+<span class="material-symbols-outlined text-on-primary-container text-[32px]">search</span>
+</div>
+<h3 class="font-h3 text-h3 text-on-surface mt-sm">1. Cari barang</h3>
+<p class="font-body-md text-body-md text-secondary">Temukan barang yang Anda butuhkan.</p>
+</div>
+<div class="flex flex-col items-center text-center gap-sm z-10 relative">
+<div class="w-[80px] h-[80px] rounded-full bg-surface-container-highest flex items-center justify-center shadow-[0_4px_20px_0_rgba(31,41,55,0.04)]">
+<span class="material-symbols-outlined text-on-surface text-[32px]">calendar_month</span>
+</div>
+<h3 class="font-h3 text-h3 text-on-surface mt-sm">2. Pilih tanggal</h3>
+<p class="font-body-md text-body-md text-secondary">Tentukan durasi penyewaan.</p>
+</div>
+<div class="flex flex-col items-center text-center gap-sm z-10 relative">
+<div class="w-[80px] h-[80px] rounded-full bg-surface-container-highest flex items-center justify-center shadow-[0_4px_20px_0_rgba(31,41,55,0.04)]">
+<span class="material-symbols-outlined text-on-surface text-[32px]">shopping_cart_checkout</span>
+</div>
+<h3 class="font-h3 text-h3 text-on-surface mt-sm">3. Booking</h3>
+<p class="font-body-md text-body-md text-secondary">Lakukan pembayaran dengan aman.</p>
+</div>
+<div class="flex flex-col items-center text-center gap-sm z-10 relative">
+<div class="w-[80px] h-[80px] rounded-full bg-surface-container-highest flex items-center justify-center shadow-[0_4px_20px_0_rgba(31,41,55,0.04)]">
+<span class="material-symbols-outlined text-on-surface text-[32px]">local_mall</span>
+</div>
+<h3 class="font-h3 text-h3 text-on-surface mt-sm">4. Ambil barang</h3>
+<p class="font-body-md text-body-md text-secondary">Barang siap digunakan!</p>
+</div>
+</div>
+</section>
+<!-- Spacer -->
+<div class="h-lg"></div>
+<!-- Featured Items Section -->
+<section class="py-lg px-gutter bg-surface-container-lowest">
+<div class="max-w-container-max mx-auto">
+<h2 class="font-h2 text-h2 text-on-surface mb-lg">Barang Populer</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<!-- Card 1 -->
+<div class="bg-surface rounded-[24px] shadow-[0_4px_20px_0_rgba(31,41,55,0.04)] hover:shadow-[0_8px_24px_0_rgba(31,41,55,0.1)] transition-all duration-300 flex flex-col overflow-hidden">
+<img alt="Camera" class="w-full h-[200px] object-cover rounded-t-[24px]" data-alt="A highly detailed close-up shot of a modern, professional DSLR camera resting on a clean, light-colored wooden table. The lighting is bright and studio-like, highlighting the sleek black texture of the camera body against a vibrant, minimal background. Soft yellow ambient light spills from the left side, adding warmth and playfulness to the composition. The overall mood is premium, accessible, and perfect for a student marketplace." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJlc9LQZFBGg5NQmty8NI3425KxNyGgPaCy0nfu4-icWWKerpSUpTpgVYjCYpvrwsxZbGKOikl3s0RecCdnwaykBrM7i4-2Bd2E5J0jO4sv0mZv737ubAIFVhn7f2QddTyeejjpmXaM21j-OhBDVFBFTDaRB_RgU16SuTED6jaMoVdD1Rr4WH4OWaDSLrNL9xMSmSjLw3BF9_b8ht611LBCZK3vWQ-fuCaDLhsS5V5Fjpe3mN6H6EeJ_-vvyE_9R4vjzXyfFo1da3G"/>
+<div class="p-md flex flex-col gap-sm flex-grow">
+<div class="flex justify-between items-start">
+<h3 class="font-label-md text-label-md text-on-surface">Kamera Canon EOS</h3>
+<span class="bg-primary-container/15 text-on-surface px-sm py-xs rounded-full font-caption text-caption">Tersedia</span>
+</div>
+<p class="font-h3 text-h3 text-primary mt-auto">Rp 50rb<span class="font-body-md text-body-md text-secondary">/hari</span></p>
+<button class="w-full font-label-md text-label-md py-sm rounded-xl bg-primary-container text-on-primary-container hover:opacity-80 transition-all duration-300 mt-sm">Sewa</button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface rounded-[24px] shadow-[0_4px_20px_0_rgba(31,41,55,0.04)] hover:shadow-[0_8px_24px_0_rgba(31,41,55,0.1)] transition-all duration-300 flex flex-col overflow-hidden">
+<img alt="Suit" class="w-full h-[200px] object-cover rounded-t-[24px]" data-alt="A stylish, flat-lay photograph of a sharp navy blue formal suit jacket neatly arranged on a pristine white background. A subtle, soft shadow grounds the garment. In the corner, a minimalist yellow tag adds a pop of brand color. The lighting is crisp and diffused, creating a professional yet approachable aesthetic suitable for university students preparing for presentations or graduations." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIy_GY_3wm2lc9aMtr-C6y8x2k9IdA9zAD6ovqK0QXx5eLUU5CjmRE2UlbE7r4V2K6lTfWYqIP4MCt2x0eOXj6oZaWOxnJK8LxMZmmWKXqRCidSHEo28bQhBP3vHO0_9-y0Z0prGNcRO0VGdxKPEKV-G4_NedMCKIVharkJuEWql0YzyBc7UAvyb4WDBxGObLnCEH-inHdLX2Ca5glsh427gaY2GDmODKcWEYv09usx6N97vbRdSZMha9kmCe9LGjdczgKiEiYcQU1"/>
+<div class="p-md flex flex-col gap-sm flex-grow">
+<div class="flex justify-between items-start">
+<h3 class="font-label-md text-label-md text-on-surface">Jas Pria Navy (M)</h3>
+<span class="bg-primary-container/15 text-on-surface px-sm py-xs rounded-full font-caption text-caption">Tersedia</span>
+</div>
+<p class="font-h3 text-h3 text-primary mt-auto">Rp 35rb<span class="font-body-md text-body-md text-secondary">/hari</span></p>
+<button class="w-full font-label-md text-label-md py-sm rounded-xl bg-primary-container text-on-primary-container hover:opacity-80 transition-all duration-300 mt-sm">Sewa</button>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface rounded-[24px] shadow-[0_4px_20px_0_rgba(31,41,55,0.04)] hover:shadow-[0_8px_24px_0_rgba(31,41,55,0.1)] transition-all duration-300 flex flex-col overflow-hidden">
+<img alt="Motorcycle" class="w-full h-[200px] object-cover rounded-t-[24px]" data-alt="A clean, vibrant photograph of a modern automatic scooter parked on a sunlit, minimal urban street. The scooter is bright and polished, reflecting a clear blue sky. The environment features smooth, light concrete and subtle yellow painted line accents on the ground. The image feels energetic, youthful, and highly relevant for mobile university students seeking reliable campus transportation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbJVTRxuF-ji1pOCTBJZ5y58odz8Ao_lEuGEJ38wvi6VC3Szb7PqvxXj0W_vy1G7Bd2QXQtZKOLbyd3zPAjo7HoxFU4QLRojlTxmc_9CfVttuHCx_80NIqSVcuCV5RDRP6NDmDioGwC6s1wvuqhJerV8FswzpFN3nRrpr9Wsko5FV1exjYVKd02Lt7bmqESkzCIdd9g9MkvqmatxYWePAXKaPjyYJLVwy1CQEUSZwiwiKqYSlSxdUs_RVt_Op4jdC4WlDX_w1RmzyI"/>
+<div class="p-md flex flex-col gap-sm flex-grow">
+<div class="flex justify-between items-start">
+<h3 class="font-label-md text-label-md text-on-surface">Honda Vario 125</h3>
+<span class="bg-surface-container text-secondary px-sm py-xs rounded-full font-caption text-caption">Disewa</span>
+</div>
+<p class="font-h3 text-h3 text-primary mt-auto">Rp 75rb<span class="font-body-md text-body-md text-secondary">/hari</span></p>
+<button class="w-full font-label-md text-label-md py-sm rounded-xl border border-on-surface text-on-surface hover:bg-surface-container-low transition-colors duration-300 mt-sm" disabled="">Sewa</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Spacer -->
+<div class="h-xl"></div>
+<!-- Benefits Section -->
+<section class="py-xl px-gutter max-w-container-max mx-auto">
+<h2 class="font-h2 text-h2 text-on-surface mb-lg text-center">Kenapa NesRent?</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
+<div class="bg-surface p-lg rounded-[24px] shadow-[0_4px_20px_0_rgba(31,41,55,0.04)] flex flex-col items-start gap-sm">
+<span class="material-symbols-outlined text-primary text-[32px] bg-primary-container/20 p-sm rounded-full">bolt</span>
+<h3 class="font-label-md text-label-md text-on-surface">Mudah dan cepat</h3>
+</div>
+<div class="bg-surface p-lg rounded-[24px] shadow-[0_4px_20px_0_rgba(31,41,55,0.04)] flex flex-col items-start gap-sm">
+<span class="material-symbols-outlined text-primary text-[32px] bg-primary-container/20 p-sm rounded-full">shield</span>
+<h3 class="font-label-md text-label-md text-on-surface">Aman dan terpercaya</h3>
+</div>
+<div class="bg-surface p-lg rounded-[24px] shadow-[0_4px_20px_0_rgba(31,41,55,0.04)] flex flex-col items-start gap-sm">
+<span class="material-symbols-outlined text-primary text-[32px] bg-primary-container/20 p-sm rounded-full">school</span>
+<h3 class="font-label-md text-label-md text-on-surface">Khusus mahasiswa UNNES</h3>
+</div>
+<div class="bg-surface p-lg rounded-[24px] shadow-[0_4px_20px_0_rgba(31,41,55,0.04)] flex flex-col items-start gap-sm">
+<span class="material-symbols-outlined text-primary text-[32px] bg-primary-container/20 p-sm rounded-full">fact_check</span>
+<h3 class="font-label-md text-label-md text-on-surface">Sistem booking jelas</h3>
+</div>
+</div>
+</section>
+<!-- Spacer -->
+<div class="h-xl"></div>
+<!-- CTA Section -->
+<section class="px-gutter pb-xl max-w-container-max mx-auto">
+<div class="bg-primary-container rounded-[24px] p-xl flex flex-col items-center text-center gap-md shadow-[0_4px_20px_0_rgba(31,41,55,0.04)] relative overflow-hidden">
+<!-- Decorative background elements -->
+<div class="absolute -top-[50%] -left-[10%] w-[300px] h-[300px] bg-white/20 rounded-full blur-3xl"></div>
+<div class="absolute -bottom-[50%] -right-[10%] w-[300px] h-[300px] bg-white/20 rounded-full blur-3xl"></div>
+<h2 class="font-h1 text-h1 text-on-primary-fixed z-10 relative">Mulai sewa sekarang dengan mudah</h2>
+<button class="font-label-md text-label-md px-lg py-sm rounded-xl bg-on-surface text-background hover:bg-on-surface/90 transition-all duration-300 z-10 relative mt-sm shadow-[0_8px_24px_0_rgba(31,41,55,0.15)] hover:-translate-y-1">Daftar Sekarang</button>
+</div>
+</section>
+</main>
+<!-- Footer Component -->
+<footer class="w-full py-xl mt-xl bg-surface-container dark:bg-surface-container-high bg-surface-container-low dark:bg-surface-container-highest">
+<div class="flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto gap-md font-body-md text-body-md">
+<div class="text-h3 font-h3 font-extrabold text-primary dark:text-primary-fixed-dim hover:underline transition-all">NesRent</div>
+<div class="flex gap-md">
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary hover:underline transition-all" href="#">Tentang</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary hover:underline transition-all" href="#">Kontak</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary hover:underline transition-all" href="#">Bantuan</a>
+</div>
+<div class="text-secondary dark:text-secondary-fixed-dim text-center md:text-right">
+                © 2024 NesRent. Dibuat dengan semangat untuk Mahasiswa UNNES.
+            </div>
+</div>
+</footer>
+</body></html>

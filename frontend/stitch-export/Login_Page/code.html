@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NesRent - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#121c2a",
+                        "secondary-fixed-dim": "#bdc7d9",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#2e3132",
+                        "on-background": "#191c1d",
+                        "surface-tint": "#705d00",
+                        "primary-fixed": "#ffe16d",
+                        "primary-fixed-dim": "#e9c400",
+                        "surface-container": "#edeeef",
+                        "tertiary-fixed": "#e1e2e4",
+                        "inverse-primary": "#e9c400",
+                        "on-tertiary-fixed": "#191c1e",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e1e3e4",
+                        "primary": "#705d00",
+                        "outline-variant": "#d0c6ab",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#c5c6c8",
+                        "surface-dim": "#d9dadb",
+                        "surface-container-high": "#e7e8e9",
+                        "on-surface": "#191c1d",
+                        "inverse-on-surface": "#f0f1f2",
+                        "secondary-container": "#d6e0f3",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#5d5f61",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#221b00",
+                        "on-secondary-fixed-variant": "#3d4756",
+                        "primary-container": "#ffd700",
+                        "on-primary-fixed-variant": "#544600",
+                        "surface-container-low": "#f3f4f5",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#e1e3e4",
+                        "outline": "#7e775f",
+                        "on-primary-container": "#705e00",
+                        "surface": "#f8f9fa",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#d9e3f6",
+                        "tertiary-container": "#d9dadc",
+                        "on-surface-variant": "#4d4732",
+                        "background": "#f8f9fa",
+                        "surface-bright": "#f8f9fa",
+                        "secondary": "#555f6f",
+                        "tertiary": "#5c5f60",
+                        "on-secondary-container": "#596373"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "container-max": "1280px",
+                        "sm": "12px",
+                        "xs": "4px",
+                        "xl": "80px",
+                        "lg": "48px",
+                        "md": "24px",
+                        "base": "8px"
+                    },
+                    "fontFamily": {
+                        "h1": ["Plus Jakarta Sans"],
+                        "body-lg": ["Inter"],
+                        "caption": ["Inter"],
+                        "h2": ["Plus Jakarta Sans"],
+                        "label-md": ["Inter"],
+                        "h3": ["Plus Jakarta Sans"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h1": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "caption": ["12px", {"lineHeight": "1.2", "fontWeight": "500"}],
+                        "h2": ["32px", {"lineHeight": "1.25", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "h3": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md text-body-md overflow-x-hidden">
+<!-- Top Navigation for Login Page -->
+<header class="w-full bg-surface shadow-sm z-50">
+<div class="flex justify-between items-center w-full px-md py-sm max-w-container-max mx-auto">
+<a class="text-h3 font-h1 font-black text-primary tracking-tight" href="#">NesRent</a>
+<a class="flex items-center gap-xs text-secondary font-label-md text-label-md hover:text-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-body-md">arrow_back</span>
+                Back to home
+            </a>
+</div>
+</header>
+<!-- Main Content Area: Split Screen -->
+<main class="flex-grow flex flex-col lg:flex-row w-full max-w-container-max mx-auto">
+<!-- Left Side: Illustration & Tagline -->
+<div class="w-full lg:w-1/2 bg-gradient-to-br from-primary-fixed to-primary-container hidden lg:flex flex-col justify-center items-center p-xl relative overflow-hidden">
+<div class="relative z-10 text-center flex flex-col items-center">
+<img alt="Students with rental items" class="max-w-[400px] w-full object-contain mb-lg rounded-[24px] shadow-sm mix-blend-multiply" data-alt="A modern, highly detailed digital illustration of college students happily sharing and carrying rental equipment like a DSLR camera, a sleek laptop, and a tripod. The scene is vibrant and energetic, set against a clean, minimalist background with a warm yellow glow. The style is playful yet professional, emphasizing community and accessibility in a bright, modern light-mode setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5lF_tzTBuWamleuesHAMl1ebaho2Sowxek4uh-1TDevCDIgSOn7CGw9yWzvdf9RP_2JFAlq7xhxznxkZ6cZppEgtghZE_a_GfFiyMp06GkJHiU_KZeksIbLdONCDnzQz2GCO6RqYtsPXL_7V-1H5HrWtwFIi1TuTmrjad71dliF_GRJhRowhL95mNBG3vBk376PLrgWRVRU3K3IxJ24hiL1rN_GuEEYHHJWRUTBBc6RsixBks-xKdZ2_6jPoWB_ktCe0yEYyn-gxx"/>
+<h1 class="font-h1 text-h1 text-on-primary-container mt-lg max-w-[400px]">
+                    Sewa barang jadi lebih mudah
+                </h1>
+</div>
+<!-- Decorative background elements -->
+<div class="absolute top-[-10%] right-[-10%] w-[300px] h-[300px] bg-white opacity-20 rounded-full blur-[80px]"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-primary opacity-20 rounded-full blur-[100px]"></div>
+</div>
+<!-- Right Side: Login Form -->
+<div class="w-full lg:w-1/2 flex justify-center items-center p-md md:p-xl bg-surface-bright">
+<div class="w-full max-w-[440px] bg-surface-container-lowest rounded-[24px] p-md md:p-lg shadow-[0_4px_20px_rgba(31,41,55,0.04)] border border-outline-variant/30">
+<!-- Form Header -->
+<div class="mb-lg text-center lg:text-left">
+<h2 class="font-h2 text-h2 text-on-surface mb-xs">Login ke NesRent</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Masuk untuk mulai menyewa barang</p>
+</div>
+<!-- Form Fields -->
+<form class="flex flex-col gap-md">
+<!-- Email / NIM Field -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface" for="email_nim">Email / NIM</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant">person</span>
+<input class="w-full pl-lg pr-sm py-sm rounded-lg border border-outline-variant bg-surface focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all font-body-md text-body-md text-on-surface outline-none" id="email_nim" name="email_nim" placeholder="Masukkan Email atau NIM Anda" type="text"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface" for="password">Password</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant">lock</span>
+<input class="w-full pl-lg pr-sm py-sm rounded-lg border border-outline-variant bg-surface focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all font-body-md text-body-md text-on-surface outline-none" id="password" name="password" placeholder="••••••••" type="password"/>
+<button class="absolute right-sm top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors" type="button">
+<span class="material-symbols-outlined">visibility_off</span>
+</button>
+</div>
+</div>
+<!-- Form Utilities -->
+<div class="flex justify-between items-center mt-xs">
+<label class="flex items-center gap-xs cursor-pointer">
+<input class="rounded text-primary-container focus:ring-primary-container/50 border-outline-variant bg-surface w-4 h-4 cursor-pointer" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface-variant text-sm">Remember me</span>
+</label>
+<a class="font-label-md text-label-md text-primary hover:underline hover:text-primary-container transition-colors" href="#">Forgot password?</a>
+</div>
+<!-- Submit Button -->
+<button class="mt-sm w-full py-sm rounded-lg bg-primary-container text-on-background font-label-md text-label-md font-bold hover:shadow-[0_8px_24px_rgba(31,41,55,0.1)] hover:-translate-y-[1px] transition-all duration-200" type="submit">
+                        Login
+                    </button>
+</form>
+<!-- Footer Text -->
+<div class="mt-lg text-center">
+<p class="font-body-md text-body-md text-on-surface-variant">
+                        Belum punya akun? 
+                        <a class="font-label-md text-label-md text-primary hover:underline hover:text-primary-container transition-colors" href="#">Daftar sekarang</a>
+</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full bg-surface-container-lowest border-t border-outline-variant py-lg px-md flex flex-col md:flex-row justify-between items-center gap-base max-w-container-max mx-auto mt-auto">
+<span class="text-label-md font-h1 font-bold text-on-surface">NesRent</span>
+<span class="font-caption text-caption text-on-surface-variant">© 2024 NesRent. Built for students.</span>
+<div class="flex gap-md font-caption text-caption">
+<a class="text-on-surface-variant hover:text-primary transition-all" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-primary transition-all" href="#">Terms of Service</a>
+</div>
+</footer>
+</body></html>

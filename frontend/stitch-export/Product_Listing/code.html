@@ -1,0 +1,348 @@
+<!DOCTYPE html><html lang="id" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>NesRent - Daftar Barang</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-background": "#191c1d",
+                        "primary-fixed-dim": "#e9c400",
+                        "on-surface": "#191c1d",
+                        "on-surface-variant": "#4d4732",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#191c1e",
+                        "on-secondary-container": "#596373",
+                        "surface-bright": "#f8f9fa",
+                        "on-secondary-fixed-variant": "#3d4756",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#d9e3f6",
+                        "outline-variant": "#d0c6ab",
+                        "on-primary-fixed": "#221b00",
+                        "error": "#ba1a1a",
+                        "background": "#f8f9fa",
+                        "surface-container-low": "#f3f4f5",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#bdc7d9",
+                        "on-secondary-fixed": "#121c2a",
+                        "primary-container": "#ffd700",
+                        "tertiary-fixed-dim": "#c5c6c8",
+                        "surface-variant": "#e1e3e4",
+                        "surface-container": "#edeeef",
+                        "error-container": "#ffdad6",
+                        "primary-fixed": "#ffe16d",
+                        "on-primary-fixed-variant": "#544600",
+                        "inverse-surface": "#2e3132",
+                        "secondary": "#555f6f",
+                        "inverse-primary": "#e9c400",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#705e00",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "tertiary-fixed": "#e1e2e4",
+                        "primary": "#705d00",
+                        "surface-tint": "#705d00",
+                        "surface-container-highest": "#e1e3e4",
+                        "outline": "#7e775f",
+                        "surface-dim": "#d9dadb",
+                        "surface": "#f8f9fa",
+                        "tertiary-container": "#d9dadc",
+                        "surface-container-high": "#e7e8e9",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#5c5f60",
+                        "secondary-container": "#d6e0f3",
+                        "on-tertiary-container": "#5d5f61"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "48px",
+                        "gutter": "24px",
+                        "xl": "80px",
+                        "base": "8px",
+                        "sm": "12px",
+                        "container-max": "1280px",
+                        "xs": "4px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "caption": ["Inter"],
+                        "h1": ["Plus Jakarta Sans"],
+                        "h2": ["Plus Jakarta Sans"],
+                        "h3": ["Plus Jakarta Sans"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "caption": ["12px", { "lineHeight": "1.2", "fontWeight": "500" }],
+                        "h1": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "h2": ["32px", { "lineHeight": "1.25", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "h3": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .shadow-soft { box-shadow: 0 4px 20px rgba(31, 41, 55, 0.04); }
+        .shadow-soft-hover:hover { box-shadow: 0 8px 24px rgba(31, 41, 55, 0.1); transform: translateY(-2px); transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- TopNavBar (Shared Component) -->
+<nav class="sticky w-full top-0 z-50 shadow-md bg-surface">
+<div class="flex justify-between items-center h-20 px-gutter w-full max-w-container-max mx-auto">
+<!-- Brand -->
+<div class="font-h1 text-h1 font-black text-primary tracking-tight">
+                NesRent
+            </div>
+<!-- Navigation Links -->
+<div class="hidden md:flex items-center gap-md">
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200 font-label-md text-label-md" href="#">Find Housing</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200 font-label-md text-label-md" href="#">Scholarships</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-200 font-label-md text-label-md" href="#">Student Guide</a>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-sm">
+<button class="font-label-md text-label-md text-primary hover:text-primary transition-colors duration-200 px-4 py-2 hidden sm:block">Sign In</button>
+<button class="font-label-md text-label-md bg-primary-container text-on-primary-container px-6 py-3 rounded-xl hover:bg-primary hover:text-on-primary transition-colors duration-200 shadow-soft">Post Listing</button>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-gutter py-xl flex flex-col md:flex-row gap-lg">
+<!-- Sidebar Filter -->
+<aside class="w-full md:w-64 flex-shrink-0 flex flex-col gap-lg">
+<div class="bg-surface-container-lowest p-md rounded-[24px] shadow-soft">
+<h3 class="font-h3 text-h3 mb-md text-on-background">Filter</h3>
+<!-- Kategori -->
+<div class="mb-lg">
+<h4 class="font-label-md text-label-md mb-sm text-on-surface-variant">Kategori</h4>
+<div class="flex flex-col gap-sm">
+<label class="flex items-center gap-sm cursor-pointer group">
+<input class="w-5 h-5 rounded border-outline-variant text-primary-container focus:ring-primary-container cursor-pointer" type="checkbox">
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Jas Formal</span>
+</label>
+<label class="flex items-center gap-sm cursor-pointer group">
+<input checked="" class="w-5 h-5 rounded border-outline-variant text-primary-container focus:ring-primary-container cursor-pointer" type="checkbox">
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Kamera</span>
+</label>
+<label class="flex items-center gap-sm cursor-pointer group">
+<input checked="" class="w-5 h-5 rounded border-outline-variant text-primary-container focus:ring-primary-container cursor-pointer" type="checkbox">
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Motor</span>
+</label>
+<label class="flex items-center gap-sm cursor-pointer group">
+<input class="w-5 h-5 rounded border-outline-variant text-primary-container focus:ring-primary-container cursor-pointer" type="checkbox">
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Sound System</span>
+</label>
+</div>
+</div>
+<!-- Harga -->
+<div class="mb-lg">
+<h4 class="font-label-md text-label-md mb-sm text-on-surface-variant">Harga (per hari)</h4>
+<input class="w-full h-2 bg-surface-variant rounded-lg appearance-none cursor-pointer accent-primary-container" max="500000" min="0" type="range" value="250000">
+<div class="flex justify-between mt-sm">
+<span class="font-caption text-caption text-on-surface-variant">Rp 0</span>
+<span class="font-caption text-caption text-on-surface-variant">Rp 500k+</span>
+</div>
+</div>
+<!-- Ketersediaan -->
+<div>
+<h4 class="font-label-md text-label-md mb-sm text-on-surface-variant">Ketersediaan</h4>
+<div class="flex flex-col gap-sm">
+<label class="flex items-center gap-sm cursor-pointer group">
+<input checked="" class="w-5 h-5 border-outline-variant text-primary-container focus:ring-primary-container cursor-pointer" name="availability" type="radio">
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Semua</span>
+</label>
+<label class="flex items-center gap-sm cursor-pointer group">
+<input class="w-5 h-5 border-outline-variant text-primary-container focus:ring-primary-container cursor-pointer" name="availability" type="radio">
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Tersedia</span>
+</label>
+<label class="flex items-center gap-sm cursor-pointer group">
+<input class="w-5 h-5 border-outline-variant text-primary-container focus:ring-primary-container cursor-pointer" name="availability" type="radio">
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Tidak Tersedia</span>
+</label>
+</div>
+</div>
+</div>
+</aside>
+<!-- Product Listing Area -->
+<section class="flex-grow flex flex-col gap-md">
+<!-- Header & Controls -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-md mb-sm">
+<h1 class="font-h2 text-h2 text-on-background">Daftar Barang</h1>
+<div class="flex flex-col sm:flex-row gap-sm w-full sm:w-auto">
+<!-- Search Input -->
+<div class="relative w-full sm:w-64">
+<span class="material-symbols-outlined absolute left-sm top-1/2 transform -translate-y-1/2 text-on-surface-variant pointer-events-none">search</span>
+<input class="w-full pl-10 pr-4 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all shadow-soft" placeholder="Cari barang..." type="text">
+</div>
+<!-- Sort Dropdown -->
+<div class="relative w-full sm:w-48">
+<select class="w-full pl-4 pr-10 py-3 bg-surface-container-lowest border border-outline-variant rounded-xl font-body-md text-body-md text-on-surface appearance-none focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all shadow-soft cursor-pointer">
+<option>Terpopuler</option>
+<option>Harga termurah</option>
+<option>Harga termahal</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 transform -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Product Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md">
+<!-- Card 1 -->
+<article class="bg-surface-container-lowest rounded-[24px] shadow-soft shadow-soft-hover flex flex-col overflow-hidden group border border-surface-variant/50">
+<div class="relative h-48 w-full overflow-hidden bg-surface-variant">
+<img alt="Kamera Mirrorless" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A high-end modern mirrorless camera resting on a clean white surface. Soft studio lighting highlights the metallic and matte black textures. The setting is minimal and bright, evoking a modern, accessible tech rental aesthetic with subtle yellow ambient light reflections." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDiM6FQlaTJNhbDtip0ljPfEGqM4wT_MuPkEsAB41x4A9Lcw_1izieie0AxUA4ZWxOn1cAYknmz1brpi_FofTzAgJ4wr_Lw7wL-HaGpyZUkbjobsNw-pnMwtGuX8XXZDk6aHBcg0QGoxxBiRPTfLrGhxPpFFeNcEG-TP_YnG7zpN6SCGwapGsSVIDp5OCXN-HM2AY9YeUSUJc8-PTtmAtSG9Hd0Edthgvd8At5z9owDSpIRdw7nUcInE-FVtAzipOa6NW2ey81oUcV5">
+<div class="absolute top-sm right-sm bg-primary/15 text-on-primary-container backdrop-blur-md px-3 py-1 rounded-full font-caption text-caption flex items-center gap-xs border border-primary/20">
+<span class="w-2 h-2 rounded-full bg-primary inline-block"></span> Tersedia
+                        </div>
+</div>
+<div class="p-md flex flex-col flex-grow gap-sm">
+<h3 class="font-label-md text-label-md text-on-background line-clamp-2">Sony Alpha a7 III Mirrorless Camera (Body Only)</h3>
+<div class="flex items-baseline gap-xs mt-auto">
+<span class="font-h3 text-h3 text-primary">Rp 150rb</span>
+<span class="font-body-md text-body-md text-on-surface-variant">/ hari</span>
+</div>
+<button class="w-full mt-sm font-label-md text-label-md bg-transparent border-2 border-primary text-primary hover:bg-primary-container hover:border-primary-container hover:text-on-primary-container py-3 rounded-xl transition-all duration-200">Lihat Detail</button>
+</div>
+</article>
+<!-- Card 2 -->
+<article class="bg-surface-container-lowest rounded-[24px] shadow-soft shadow-soft-hover flex flex-col overflow-hidden group border border-surface-variant/50">
+<div class="relative h-48 w-full overflow-hidden bg-surface-variant">
+<img alt="Motor Matic" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A sleek, modern scooter parked on a pristine concrete floor against a neutral light grey wall. The lighting is bright and even, highlighting the scooter's glossy finish. The overall mood is urban, accessible, and clean, fitting a premium student rental service with subtle warm undertones." src="https://www.image2url.com/r2/default/images/1778041460794-ab7621e7-a487-4561-940d-8ceba1c4b94e.jpg">
+<div class="absolute top-sm right-sm bg-surface-variant text-on-surface-variant backdrop-blur-md px-3 py-1 rounded-full font-caption text-caption flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-secondary inline-block"></span> Disewa
+                        </div>
+</div>
+<div class="p-md flex flex-col flex-grow gap-sm">
+<h3 class="font-label-md text-label-md text-on-background line-clamp-2">Honda Vario 150 eSP Matte Black 2022</h3>
+<div class="flex items-baseline gap-xs mt-auto">
+<span class="font-h3 text-h3 text-primary">Rp 75rb</span>
+<span class="font-body-md text-body-md text-on-surface-variant">/ hari</span>
+</div>
+<button class="w-full mt-sm font-label-md text-label-md bg-transparent border-2 border-primary text-primary hover:bg-primary-container hover:border-primary-container hover:text-on-primary-container py-3 rounded-xl transition-all duration-200">Lihat Detail</button>
+</div>
+</article>
+<!-- Card 3 -->
+<article class="bg-surface-container-lowest rounded-[24px] shadow-soft shadow-soft-hover flex flex-col overflow-hidden group border border-surface-variant/50">
+<div class="relative h-48 w-full overflow-hidden bg-surface-variant">
+<img alt="Jas Formal" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A perfectly tailored formal blazer displayed on a high-quality wooden hanger against a clean white backdrop. Soft, diffused lighting emphasizes the fabric's subtle texture and sharp cut. The atmosphere is professional, neat, and minimalist, suited for an academic or formal rental catalog with a bright aesthetic." src="https://www.image2url.com/r2/default/images/1778041613673-ca5d998f-f52f-42b5-8299-63c0a6a39d0c.jpg">
+<div class="absolute top-sm right-sm bg-primary/15 text-on-primary-container backdrop-blur-md px-3 py-1 rounded-full font-caption text-caption flex items-center gap-xs border border-primary/20">
+<span class="w-2 h-2 rounded-full bg-primary inline-block"></span> Tersedia
+                        </div>
+</div>
+<div class="p-md flex flex-col flex-grow gap-sm">
+<h3 class="font-label-md text-label-md text-on-background line-clamp-2">Almamater UNNES (All size)</h3>
+<div class="flex items-baseline gap-xs mt-auto">
+<span class="font-h3 text-h3 text-primary">Rp 50rb</span>
+<span class="font-body-md text-body-md text-on-surface-variant">/ hari</span>
+</div>
+<button class="w-full mt-sm font-label-md text-label-md bg-transparent border-2 border-primary text-primary hover:bg-primary-container hover:border-primary-container hover:text-on-primary-container py-3 rounded-xl transition-all duration-200">Lihat Detail</button>
+</div>
+</article>
+<!-- Card 4 -->
+<article class="bg-surface-container-lowest rounded-[24px] shadow-soft shadow-soft-hover flex flex-col overflow-hidden group border border-surface-variant/50">
+<div class="relative h-48 w-full overflow-hidden bg-surface-variant">
+<img alt="Headphone" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Premium over-ear wireless studio headphones resting on a minimalist concrete plinth. The lighting is dramatic yet soft, casting long subtle shadows that highlight the matte finish and plush ear cushions. The environment suggests professional audio production within a modern, clean design system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuChqDtw7IkqeEji3dDDLYuPw3vi14Wvgu7GKfJC1orBeixjnNTm7dSO-YIyhT5cXZNgqQ2FZW-66LxtdOuz5gqofmUj8r-j9xwg3E0fr40XDM9s9vyDHkaoCvGCvRJ2sNLvxysXQYKYSEB4C72qrHqrpyLbbNDLY5wJQBrn8YxFrB2ozhQr39QLAb3l5rc6dN3gcIta70aRqSXvCjbfVhheaSy-h3EuVbnzV-1Pp_M_S286wcdfkduljyd-SiJAIyO3bT3mNkJvQCec">
+<div class="absolute top-sm right-sm bg-primary/15 text-on-primary-container backdrop-blur-md px-3 py-1 rounded-full font-caption text-caption flex items-center gap-xs border border-primary/20">
+<span class="w-2 h-2 rounded-full bg-primary inline-block"></span> Tersedia
+                        </div>
+</div>
+<div class="p-md flex flex-col flex-grow gap-sm">
+<h3 class="font-label-md text-label-md text-on-background line-clamp-2">Audio-Technica ATH-M50x Professional Studio Monitor</h3>
+<div class="flex items-baseline gap-xs mt-auto">
+<span class="font-h3 text-h3 text-primary">Rp 40rb</span>
+<span class="font-body-md text-body-md text-on-surface-variant">/ hari</span>
+</div>
+<button class="w-full mt-sm font-label-md text-label-md bg-transparent border-2 border-primary text-primary hover:bg-primary-container hover:border-primary-container hover:text-on-primary-container py-3 rounded-xl transition-all duration-200">Lihat Detail</button>
+</div>
+</article>
+<!-- Card 5 -->
+<article class="bg-surface-container-lowest rounded-[24px] shadow-soft shadow-soft-hover flex flex-col overflow-hidden group border border-surface-variant/50">
+<div class="relative h-48 w-full overflow-hidden bg-surface-variant">
+<img alt="Laptop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A sleek, ultra-thin laptop open on a modern wooden desk surface. The screen glows softly against a bright, airy background. The composition is highly structured and minimalist, emphasizing the device's premium build quality and suitability for academic or creative work in a modern setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsqnS7ziFp7CsU3M6zci5HoXIwfvdp3S3IdvTlSa7RW10lL4347vMy7QDe84HqIprqIoXboOb1rt2wYnxXStCQqbkkFW_41qO74VFYCo19F2CsNIaGWWoY_Ny5P0WDtteTxv7WcOoLF-DIpNhg5X5L3bA-5wrkNypGSS88KT0OVvFJfc_v2qUwgheGBNjZydaUk2-54ZtdhceGfKwjSLldnD5duYp4SOGTLab6BABBJ-1YqwqaNLx_Q1Gx_S5XsJIbA7awpCOFgDvW">
+<div class="absolute top-sm right-sm bg-primary/15 text-on-primary-container backdrop-blur-md px-3 py-1 rounded-full font-caption text-caption flex items-center gap-xs border border-primary/20">
+<span class="w-2 h-2 rounded-full bg-primary inline-block"></span> Tersedia
+                        </div>
+</div>
+<div class="p-md flex flex-col flex-grow gap-sm">
+<h3 class="font-label-md text-label-md text-on-background line-clamp-2">MacBook Air M1 2020 8GB/256GB Space Grey</h3>
+<div class="flex items-baseline gap-xs mt-auto">
+<span class="font-h3 text-h3 text-primary">Rp 120rb</span>
+<span class="font-body-md text-body-md text-on-surface-variant">/ hari</span>
+</div>
+<button class="w-full mt-sm font-label-md text-label-md bg-transparent border-2 border-primary text-primary hover:bg-primary-container hover:border-primary-container hover:text-on-primary-container py-3 rounded-xl transition-all duration-200">Lihat Detail</button>
+</div>
+</article>
+<!-- Card 6 -->
+<article class="bg-surface-container-lowest rounded-[24px] shadow-soft shadow-soft-hover flex flex-col overflow-hidden group border border-surface-variant/50">
+<div class="relative h-48 w-full overflow-hidden bg-surface-variant">
+<img alt="Sepeda" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A modern fixed-gear bicycle leaning against a smooth, light-colored architectural wall. The bright midday sunlight casts crisp shadows, highlighting the bike's clean lines and minimalist frame. The scene conveys an active, eco-friendly campus lifestyle within a highly aesthetic, clean visual framework." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL5VLg3_otC_1uYApg_edQXTWR91hGttqlEHs-d4MbAeBxkr2gxgBH74wrD-o_SZ5jSgEp_D4CvakdNZ4PyfWq0XjPMTEXhw7Aicp2Va54ehWVDL1lFlL8BEBDH0dpnKyZNpkjC7jKtjvwlb6vvocPAtLWZXBOvwIdF41LYhQeO6qy1WMNqXqb67rZAdS5dooL36FbxTM6sT_sjHVrd6O2p_KZIIJD1dTE4tc5xtPwfZfyCxKqSMbS1vhjx_fek-qaCIaIBKCHayNc">
+<div class="absolute top-sm right-sm bg-surface-variant text-on-surface-variant backdrop-blur-md px-3 py-1 rounded-full font-caption text-caption flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-secondary inline-block"></span> Disewa
+                        </div>
+</div>
+<div class="p-md flex flex-col flex-grow gap-sm">
+<h3 class="font-label-md text-label-md text-on-background line-clamp-2">Sepeda Lipat Polygon Urbano 3 Black</h3>
+<div class="flex items-baseline gap-xs mt-auto">
+<span class="font-h3 text-h3 text-primary">Rp 30rb</span>
+<span class="font-body-md text-body-md text-on-surface-variant">/ hari</span>
+</div>
+<button class="w-full mt-sm font-label-md text-label-md bg-transparent border-2 border-primary text-primary hover:bg-primary-container hover:border-primary-container hover:text-on-primary-container py-3 rounded-xl transition-all duration-200">Lihat Detail</button>
+</div>
+</article>
+</div>
+<!-- Pagination / Load More -->
+<div class="flex justify-center mt-lg">
+<button class="font-label-md text-label-md bg-surface-variant text-on-surface px-8 py-3 rounded-xl hover:bg-primary-container hover:text-on-primary-container transition-colors duration-300 shadow-soft">
+                    Load More
+                </button>
+</div>
+</section>
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="w-full bg-surface-container-highest border-t border-outline-variant mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-start px-gutter py-xl gap-lg max-w-container-max mx-auto">
+<div class="flex flex-col gap-sm">
+<div class="font-h3 text-h3 font-black text-primary">
+                    NesRent
+                </div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-xs">
+                    Platform penyewaan barang terpercaya untuk mahasiswa. Mudah, aman, dan terjangkau.
+                </p>
+</div>
+<div class="flex flex-col gap-sm">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary underline transition-all duration-200" href="#">About Us</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary underline transition-all duration-200" href="#">Safety Guide</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary underline transition-all duration-200" href="#">Terms of Service</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary underline transition-all duration-200" href="#">Privacy Policy</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary underline transition-all duration-200" href="#">Contact Support</a>
+</div>
+</div>
+<div class="w-full border-t border-outline-variant/30 py-md px-gutter">
+<div class="max-w-container-max mx-auto font-body-md text-body-md text-on-surface-variant text-center md:text-left">
+                © 2024 NesRent. Built for UNNES Students.
+            </div>
+</div>
+</footer>
+
+
+</body></html>
