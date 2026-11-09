@@ -1,56 +1,38 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-require('dotenv').config({ path: __dirname + '/.env' });
+const app = require('./app');
+const env = require('./config/env');
+const { validateEnv } = require('./config/validateEnv');
+const { testConnection } = require('./config/database');
 
-const app = express();
+const start = async () => {
+  validateEnv();
 
-// CORS - Allow frontend origins
-app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:5174', 'http://localhost:5175'],
-  credentials: true,
-}));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+  const reachable = await testConnection();
+  if (!reachable) {
+    console.error('Tidak dapat terhubung ke database. Pastikan MySQL berjalan dan kredensial di backend/.env benar.');
+    process.exit(1);
+  }
 
-// Import routes
-const authRoutes = require('./routes/auth');
-const productRoutes = require('./routes/products');
-const bookingRoutes = require('./routes/bookings');
-const userRoutes = require('./routes/users');
-const adminRoutes = require('./routes/admin');
-const uploadRoutes = require('./routes/upload');
-
-// Import middleware
-const { errorHandler, notFound } = require('./middleware/errorHandler');
-
-// Health check
-app.get('/', (req, res) => {
-  res.json({
-    message: 'NesRent API Server',
-    version: '1.0.0',
-    status: 'running',
+  const server = app.listen(env.port, () => {
+    console.log(`NesRent API berjalan di http://localhost:${env.port} (${env.nodeEnv})`);
   });
+
+  server.on('error', (error) => {
+    console.error('Gagal menjalankan server:', error.message);
+    process.exit(1);
+  });
+
+  const shutdown = (signal) => {
+    console.log(`\n${signal} diterima, menutup server...`);
+    server.close(() => process.exit(0));
+  };
+
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+};
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled rejection:', reason);
+  process.exit(1);
 });
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/bookings', bookingRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/upload', uploadRoutes);
-
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Error handling
-app.use(notFound);
-app.use(errorHandler);
-
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`🚀 NesRent Server running on port ${PORT}`);
-  console.log(`📚 API Documentation: http://localhost:${PORT}/api`);
-});
+start();

@@ -19,6 +19,11 @@ yarn-error.log*
 # User uploads (runtime data, not source)
 backend/uploads/
 
+# Database dumps (contain password hashes and personal data)
+*.sql
+!backend/config/schema.sql
+!backend/config/migrations/*.sql
+
 # Editor / OS
 .vscode/
 .idea/

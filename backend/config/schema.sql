@@ -1,86 +1,95 @@
--- NesRent Database Schema
--- Run this SQL to set up the database
+-- =============================================================================
+-- NesRent — canonical schema
+--
+-- This is the single source of truth for a fresh database. For a database
+-- that already exists, apply the incremental changes in config/migrations/
+-- instead (npm run migrate).
+-- =============================================================================
 
-CREATE DATABASE IF NOT EXISTS nesrent;
-USE nesrent;
+CREATE DATABASE IF NOT EXISTS `myapp_db`
+  DEFAULT CHARACTER SET utf8mb4
+  DEFAULT COLLATE utf8mb4_general_ci;
 
--- Users table
-CREATE TABLE IF NOT EXISTS users (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(255) NOT NULL,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  password VARCHAR(255) NOT NULL,
-  nim VARCHAR(20) UNIQUE NOT NULL,
-  faculty VARCHAR(100),
-  phone VARCHAR(20),
-  role ENUM('user', 'admin') DEFAULT 'user',
-  status ENUM('pending', 'verified', 'rejected', 'blacklist') DEFAULT 'pending',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_email (email),
-  INDEX idx_nim (nim),
-  INDEX idx_status (status)
-);
+USE `myapp_db`;
 
--- Products table
-CREATE TABLE IF NOT EXISTS products (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(255) NOT NULL,
-  category VARCHAR(100) NOT NULL,
-  condition ENUM('Sangat Baik', 'Baik', 'Cukup') DEFAULT 'Baik',
-  price_per_day DECIMAL(10, 2) NOT NULL,
-  stock INT DEFAULT 1,
-  description TEXT,
-  specifications TEXT,
-  image VARCHAR(500),
-  owner_id INT NOT NULL,
-  status ENUM('available', 'unavailable') DEFAULT 'available',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE,
-  INDEX idx_category (category),
-  INDEX idx_status (status),
-  INDEX idx_owner (owner_id)
-);
+-- -----------------------------------------------------------------------------
+-- users — students renting from and lending to each other
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `nim` varchar(50) NOT NULL,
+  `faculty` varchar(100) DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `role` enum('user','admin') NOT NULL DEFAULT 'user',
+  `status` enum('pending','verified','rejected','blacklist') NOT NULL DEFAULT 'pending',
+  `identity_document` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_users_email` (`email`),
+  UNIQUE KEY `uq_users_nim` (`nim`),
+  KEY `idx_users_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Bookings table
-CREATE TABLE IF NOT EXISTS bookings (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  user_id INT NOT NULL,
-  product_id INT NOT NULL,
-  start_date DATE NOT NULL,
-  end_date DATE NOT NULL,
-  total_price DECIMAL(10, 2) NOT NULL,
-  notes TEXT,
-  status ENUM('pending', 'approved', 'rejected', 'completed', 'cancelled') DEFAULT 'pending',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-  INDEX idx_user (user_id),
-  INDEX idx_product (product_id),
-  INDEX idx_status (status)
-);
+-- -----------------------------------------------------------------------------
+-- products — items available for rent, priced per day
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `products` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `owner_id` int(11) DEFAULT NULL,
+  `product_name` varchar(255) NOT NULL,
+  `description` text DEFAULT NULL,
+  `category` varchar(50) DEFAULT NULL,
+  `condition` varchar(50) DEFAULT 'Baik',
+  `price` decimal(10,2) NOT NULL COMMENT 'Daily price, stored in thousands of rupiah',
+  `image_url` varchar(255) DEFAULT NULL,
+  `status` enum('available','unavailable','rented') NOT NULL DEFAULT 'available',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_products_owner` (`owner_id`),
+  KEY `idx_products_category` (`category`),
+  CONSTRAINT `fk_products_owner` FOREIGN KEY (`owner_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Blacklist table
-CREATE TABLE IF NOT EXISTS blacklist (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  user_id INT NOT NULL,
-  reason TEXT,
-  added_by INT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (added_by) REFERENCES users(id) ON DELETE CASCADE,
-  INDEX idx_user (user_id)
-);
+-- -----------------------------------------------------------------------------
+-- bookings — a rental of one product by one user for a date range
+--
+--   user_id  = the renter
+--   owner_id = the seller of the rented item (denormalised from products)
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `bookings` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `owner_id` int(11) DEFAULT NULL,
+  `booking_date` date DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
+  `total_price` decimal(10,2) DEFAULT NULL,
+  `notes` text DEFAULT NULL COMMENT 'Pickup location',
+  `status` enum('pending','confirmed','cancelled','approved','rejected','completed') NOT NULL DEFAULT 'pending',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_bookings_renter` (`user_id`),
+  KEY `idx_bookings_product` (`product_id`),
+  KEY `idx_bookings_owner` (`owner_id`),
+  KEY `idx_bookings_status` (`status`),
+  CONSTRAINT `fk_bookings_renter` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_bookings_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Insert sample admin user (password: admin123)
-INSERT INTO users (name, email, password, nim, role, status) VALUES
-('Admin NesRent', 'admin@nesrent.ac.id', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYz5f7N3nTO', '0000000001', 'admin', 'verified');
-
--- Insert sample categories
-INSERT INTO products (name, category, condition, price_per_day, stock, description, specifications, owner_id) VALUES
-('Kamera Canon EOS 800D', 'Elektronik', 'Sangat Baik', 250000, 2, 'Kamera DSLR untuk fotografi dan videografi', '24MP, WiFi, Lensa Kit 18-55mm', 1),
-('Vario 150 eSP', 'Kendaraan', 'Baik', 75000, 1, 'Motor matik cocok untuk mahasiswa', '150cc, Body mulus, Servis lengkap', 1),
-('Proyektor Epson', 'Elektronik', 'Baik', 50000, 1, 'Proyektor untuk presentasi', '3000 lumens, HDMI, USB', 1),
-('Tenda Dome 4 Orang', 'Alat Camping', 'Baik', 35000, 3, 'Tenda camping untuk keluarga kecil', 'Waterproof, Mudah dipasang', 1);
+-- -----------------------------------------------------------------------------
+-- blacklist — audit trail for blocked accounts
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `blacklist` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `reason` text DEFAULT NULL,
+  `added_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_blacklist_user` (`user_id`),
+  CONSTRAINT `fk_blacklist_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_blacklist_added_by` FOREIGN KEY (`added_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
