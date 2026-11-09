@@ -1,11 +1,17 @@
-const { getDashboardStats, getCategoryStats, getRecentBookings } = require('../controllers/adminController');
-const { authMiddleware, adminMiddleware } = require('../middleware/auth');
 const router = require('express').Router();
+const {
+  getDashboardStats,
+  getCategoryStats,
+  getRecentBookings,
+} = require('../controllers/adminController');
+const { authenticate, requireRole } = require('../middleware/auth');
+const { asyncHandler } = require('../middleware/asyncHandler');
 
-router.use(authMiddleware, adminMiddleware);
+// Every route in this router requires a signed-in admin.
+router.use(authenticate, requireRole('admin'));
 
-router.get('/stats', getDashboardStats);
-router.get('/categories', getCategoryStats);
-router.get('/recent-bookings', getRecentBookings);
+router.get('/stats', asyncHandler(getDashboardStats));
+router.get('/categories', asyncHandler(getCategoryStats));
+router.get('/recent-bookings', asyncHandler(getRecentBookings));
 
 module.exports = router;
