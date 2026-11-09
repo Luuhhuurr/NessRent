@@ -3,52 +3,55 @@ import { useState } from 'react';
 export default function ImageGallery({ images, productName }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  // Use placeholder thumbnails if no additional images provided
-  const thumbnails = images.length > 1 ? images.slice(1, 4) : [
-    { src: images[0]?.src, isPlaceholder: true },
-    { src: null, isPlaceholder: true },
-    { src: null, isPlaceholder: true },
-  ];
+  const gallery = images?.length ? images : [{ src: null }];
+
+  const selected = gallery[Math.min(selectedIndex, gallery.length - 1)];
 
   return (
-    <div className="space-y-[var(--spacing-md)]">
-      {/* Main Image */}
-      <div className="bg-surface-container-lowest rounded-[var(--radius-lg)] overflow-hidden shadow-[0_4px_20px_rgba(31,41,55,0.04)] aspect-[4/3] w-full flex items-center justify-center">
-        <img
-          src={images[selectedIndex]?.src || images[0]?.src}
-          alt={`${productName} - Image ${selectedIndex + 1}`}
-          className="w-full h-full object-cover"
-        />
+    <div className="flex flex-col gap-[var(--spacing-sm)]">
+      <div className="rounded-[var(--radius-lg)] overflow-hidden border border-outline-variant bg-surface-container aspect-[4/3] w-full flex items-center justify-center">
+        {selected?.src ? (
+          <img
+            src={selected.src}
+            alt={`${productName} - Image ${selectedIndex + 1}`}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <span className="material-symbols-outlined text-[48px] text-on-surface-variant">
+            photo_camera
+          </span>
+        )}
       </div>
 
-      {/* Thumbnail Grid */}
-      <div className="grid grid-cols-3 gap-[var(--spacing-xs)]">
-        {thumbnails.map((thumb, index) => (
-          <div
-            key={index}
-            onClick={() => !thumb.isPlaceholder && setSelectedIndex(index + 1)}
-            className={`bg-surface-container-lowest rounded-[var(--radius-md)] overflow-hidden shadow-[0_4px_20px_rgba(31,41,55,0.04)] aspect-square border cursor-pointer transition-opacity ${
-              selectedIndex === index + 1
-                ? 'border-primary opacity-100'
-                : 'border-surface-variant opacity-70 hover:opacity-100'
-            }`}
-          >
-            {thumb.isPlaceholder ? (
-              <div className="w-full h-full bg-surface-container flex items-center justify-center text-on-surface-variant">
-                <span className="material-symbols-outlined text-[32px]">
-                  {index === 1 ? 'photo_camera_back' : 'sd_card'}
+      {gallery.length > 1 && (
+        <div className="grid grid-cols-4 gap-[var(--spacing-xs)]">
+          {gallery.map((image, index) => (
+            <button
+              key={index}
+              type="button"
+              onClick={() => setSelectedIndex(index)}
+              aria-label={`Lihat gambar ${index + 1}`}
+              className={`aspect-square rounded-[var(--radius-md)] overflow-hidden border transition-colors ${
+                selectedIndex === index
+                  ? 'border-primary'
+                  : 'border-outline-variant hover:border-outline'
+              }`}
+            >
+              {image?.src ? (
+                <img
+                  src={image.src}
+                  alt={`${productName} thumbnail ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="w-full h-full grid place-items-center bg-surface-container text-on-surface-variant">
+                  <span className="material-symbols-outlined text-[22px]">image</span>
                 </span>
-              </div>
-            ) : (
-              <img
-                src={thumb.src}
-                alt={`${productName} thumbnail ${index + 1}`}
-                className="w-full h-full object-cover"
-              />
-            )}
-          </div>
-        ))}
-      </div>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,178 +1,219 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { productService } from '../services/productService';
+import { getProductImage, getStatusLabel, formatPrice } from '../lib/format';
 
-const products = [
-  {
-    id: 1,
-    name: 'Vario 150 eSP',
-    image: 'https://lh3.googleusercontent.com/aida/ADBb0uhJ2jSkKqS-OnHKIuRFhCT7_NJ8zqN-vAqKwWMSh5N9-sT3b9nPOlSp1ZlIbTESW8Z5Zr34RBOHvjzc8rg5EFisYv6vV2KkHYPcFeGhf2lNkJklajf6sCXNloQVUT4mZD3yax3QU6jhUDGN9H8mEnW-cm-IUArAn3QhuTQ8hDmEOOmsLkQiXFy0OHbmczl20Vju8eAjvmNScV_xknqp5sREiypOKqrNVf3mZk91HpZptu4pVrFRv59KWe91',
-    category: 'Kendaraan',
-    price: 75000,
-    status: 'Tersedia',
-  },
-  {
-    id: 2,
-    name: 'Proyektor Epson',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDXRIjrxtPY5jAg_j6izGkZMSUYf0QWZZzxyr6RBEn63IahGuqZW_xCTvR9o4FM0G02uIQZ0aHDU0eVOvj1TjaOQiT9JW-2yF3ZyCOKN3jtk1YC2vKRUUBI5vyOyWFKb5bhpQvnOOPwW2rNJ2iLXcLWVkmG4z2FJbU4kBi3pYVJsVI7iS7s6fI_n8HDm-panLJ9AAuhBllqL-tJd3ycjpPmOeXNtJOE9cC4bF8UZJiEFkNphmU9Fayr8tW73pCxFI-YHiR9T63XIdKj',
-    category: 'Elektronik',
-    price: 50000,
-    status: 'Tersedia',
-  },
-  {
-    id: 3,
-    name: 'Kamera Sony A7III',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDeVc6eQJk2RhEPcw1WZotYg0Qzaex6uCCW0TudJVLQlOpjMdrq9OKizn-lp-03nBXwMiBA8-y_AQXNuUZXblKqwSqv-Z2raezRDMGRUb55gwpJoq1doBs5A3OIFp_V21miluPx2ftMLvaqivCU-fgD2HdlCC0XMNX1xd0gWiDwd1be--Jq5IdPSJYWujcFhp2OVXLtslzhX8J95KxzFKDKJie0wW9FDF5-j6pK6rZ8dLhwRz438khT_sCwkmzbwUsULUsxWc9HNdYZ',
-    category: 'Elektronik',
-    price: 250000,
-    status: 'Tidak Tersedia',
-  },
+const CATEGORIES = ['Elektronik', 'Kendaraan', 'Fashion', 'Alat Camping'];
+
+const STATUS_OPTIONS = [
+  { value: '', label: 'Semua status' },
+  { value: 'available', label: 'Tersedia' },
+  { value: 'unavailable', label: 'Tidak tersedia' },
 ];
 
+const getStatusClass = (status) =>
+  status === 'available' || status === 'tersedia'
+    ? 'bg-success-container text-on-success-container'
+    : 'bg-surface-container-high text-on-surface-variant';
+
 export default function ProductManagement() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [notice, setNotice] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
+  const fetchProducts = useCallback(async () => {
+    const response = await productService.getProducts();
+    return response?.data?.products ?? [];
+  }, []);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        setProducts(await fetchProducts());
+      } catch (err) {
+        setError(err?.response?.data?.message || 'Gagal memuat daftar barang.');
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, [fetchProducts]);
+
   const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !categoryFilter || product.category === categoryFilter;
-    const matchesStatus = !statusFilter || product.status === statusFilter;
+    const name = String(product.product_name ?? '').toLowerCase();
+    const matchesSearch = !searchQuery || name.includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      !categoryFilter ||
+      String(product.category ?? '').toLowerCase() === categoryFilter.toLowerCase();
+    const matchesStatus =
+      !statusFilter ||
+      product.status === statusFilter ||
+      getStatusLabel(product.status) === statusFilter;
+
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
+  const handleDeleteProduct = async (productId) => {
+    setError(null);
+    setNotice(null);
+    try {
+      await productService.deleteProduct(productId);
+      setProducts((current) => current.filter((p) => p.id !== productId));
+      setNotice(`Barang #${productId} berhasil dihapus.`);
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Gagal menghapus barang.');
+    }
+  };
+
   return (
     <>
-      {/* TopAppBar */}
-      <header className="bg-surface flex justify-between items-center px-[var(--spacing-md)] py-[var(--spacing-xs)] w-full sticky top-0 z-40">
-        <div className="flex items-center gap-[var(--spacing-md)] flex-1">
-          <div className="relative w-full max-w-md hidden md:block">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-surface-container-highest rounded-[var(--radius-lg)] text-on-surface focus:ring-2 focus:ring-primary-container focus:outline-none transition-shadow text-body-md"
-            />
-          </div>
-        </div>
-        <div className="flex items-center gap-[var(--spacing-md)]">
-          <button className="bg-primary-container text-on-primary-container px-4 py-2 rounded-[var(--radius-lg)] text-label-md font-bold hover:bg-primary-fixed-dim transition-colors shadow-[0_4px_20px_rgba(31,41,55,0.04)] flex items-center gap-2">
-            <span className="material-symbols-outlined">add</span>
-            + Tambah Barang
-          </button>
-          <button className="text-on-surface-variant hover:text-primary-container p-2 rounded-full hover:bg-surface-container-highest">
-            <span className="material-symbols-outlined">notifications</span>
-          </button>
-          <div className="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden cursor-pointer hover:ring-2 ring-primary-container transition-all">
-            <span className="material-symbols-outlined text-4xl text-on-surface-variant">account_circle</span>
-          </div>
-        </div>
-      </header>
+      <div className="mb-[var(--spacing-lg)]">
+        <h1 className="font-heading text-h2 text-on-surface">Manajemen barang</h1>
+        <p className="text-body-md text-on-surface-variant mt-1">
+          Kelola seluruh barang yang tercatat di katalog NesRent.
+        </p>
+      </div>
 
-      {/* Main Content */}
-      <main className="p-[var(--spacing-md)] pb-[var(--spacing-xl)] min-h-[calc(100vh-80px)]">
-        {/* Page Header */}
-        <div className="mb-[var(--spacing-lg)] flex justify-between items-end">
-          <div>
-            <h1 className="font-heading text-h1 text-on-background mb-2">Manajemen Barang</h1>
-            <p className="text-body-lg text-on-surface-variant">Kelola semua data barang penyewaan</p>
-          </div>
-          <Link
-            to="/admin/add-product"
-            className="bg-primary-container text-on-primary-container px-6 py-3 rounded-[var(--radius-xl)] text-label-md font-bold hover:bg-primary-fixed-dim transition-colors shadow-[0_4px_20px_rgba(31,41,55,0.04)] flex items-center gap-2"
+      <div className="flex flex-col md:flex-row gap-[var(--spacing-md)] md:items-center justify-between mb-[var(--spacing-md)]">
+        <div className="relative w-full md:w-80">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
+            search
+          </span>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari barang..."
+            className="w-full pl-10 pr-3 py-2.5 bg-surface-container border border-outline-variant rounded-[var(--radius-md)] text-body-sm text-on-surface placeholder:text-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/25 outline-none transition-colors"
+          />
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-[var(--spacing-sm)] w-full md:w-auto">
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            aria-label="Filter kategori"
+            className="bg-surface-container border border-outline-variant rounded-[var(--radius-md)] px-3 py-2.5 text-body-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/25 outline-none transition-colors cursor-pointer"
           >
-            <span className="material-symbols-outlined">add</span>
-            + Tambah Barang
-          </Link>
-        </div>
+            <option value="">Semua kategori</option>
+            {CATEGORIES.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
 
-        {/* Filters & Search Toolbar */}
-        <div className="bg-surface-container-lowest rounded-[var(--radius-xl)] shadow-[0_4px_20px_rgba(31,41,55,0.04)] p-[var(--spacing-md)] mb-[var(--spacing-lg)] flex flex-col md:flex-row gap-[var(--spacing-md)] items-center justify-between">
-          <div className="relative w-full md:w-96">
-            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari barang..."
-              className="w-full pl-12 pr-4 py-3 bg-surface border border-outline-variant rounded-[var(--radius-lg)] text-on-surface focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all text-body-md"
-            />
-          </div>
-          <div className="flex items-center gap-[var(--spacing-xs)] w-full md:w-auto">
-            <div className="relative w-full md:w-48">
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="w-full appearance-none pl-4 pr-10 py-3 bg-surface border border-outline-variant rounded-[var(--radius-lg)] text-on-surface focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all text-body-md cursor-pointer"
-              >
-                <option value="">Semua Kategori</option>
-                <option value="Kendaraan">Kendaraan</option>
-                <option value="Elektronik">Elektronik</option>
-              </select>
-              <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
-            </div>
-            <div className="relative w-full md:w-48">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full appearance-none pl-4 pr-10 py-3 bg-surface border border-outline-variant rounded-[var(--radius-lg)] text-on-surface focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all text-body-md cursor-pointer"
-              >
-                <option value="">Semua Status</option>
-                <option value="Tersedia">Tersedia</option>
-                <option value="Tidak Tersedia">Tidak Tersedia</option>
-              </select>
-              <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
-            </div>
-          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            aria-label="Filter status"
+            className="bg-surface-container border border-outline-variant rounded-[var(--radius-md)] px-3 py-2.5 text-body-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/25 outline-none transition-colors cursor-pointer"
+          >
+            {STATUS_OPTIONS.map((option) => (
+              <option key={option.value || 'all'} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
+      </div>
 
-        {/* Product Table Card */}
-        <div className="bg-surface-container-lowest rounded-[var(--radius-xl)] shadow-[0_4px_20px_rgba(31,41,55,0.04)] overflow-hidden">
+      {notice && (
+        <div className="rounded-[var(--radius-md)] bg-success-container/40 border border-success/25 p-3 mb-[var(--spacing-md)] flex items-center gap-2">
+          <span className="material-symbols-outlined text-success text-[20px]">check_circle</span>
+          <p className="text-body-sm text-on-success-container">{notice}</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-[var(--radius-md)] bg-error-container/40 border border-error/30 p-3 mb-[var(--spacing-md)] flex items-center gap-2">
+          <span className="material-symbols-outlined text-error text-[20px]">error</span>
+          <p className="text-body-sm text-on-error-container">{error}</p>
+        </div>
+      )}
+
+      {loading && (
+        <div className="panel p-[var(--spacing-lg)] text-center">
+          <span className="material-symbols-outlined text-on-surface-variant text-[40px] animate-spin">
+            progress_activity
+          </span>
+          <p className="text-body-sm text-on-surface-variant mt-2">Memuat data...</p>
+        </div>
+      )}
+
+      {!loading && products.length === 0 && (
+        <div className="panel p-[var(--spacing-xl)] text-center">
+          <span className="material-symbols-outlined text-[56px] text-on-surface-variant mb-4">inventory_2</span>
+          <h3 className="font-heading text-h3 text-on-surface mb-2">Tidak ada barang</h3>
+          <p className="text-body-md text-on-surface-variant">
+            {searchQuery || categoryFilter || statusFilter
+              ? 'Tidak ada barang yang sesuai dengan filter Anda.'
+              : 'Belum ada barang di database.'}
+          </p>
+        </div>
+      )}
+
+      {!loading && filteredProducts.length > 0 && (
+        <div className="panel overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-surface border-b border-surface-container-highest">
-                  <th className="py-4 px-6 text-label-md text-on-surface-variant">Gambar</th>
-                  <th className="py-4 px-6 text-label-md text-on-surface-variant">Nama Barang</th>
-                  <th className="py-4 px-6 text-label-md text-on-surface-variant">Kategori</th>
-                  <th className="py-4 px-6 text-label-md text-on-surface-variant">Harga per hari</th>
-                  <th className="py-4 px-6 text-label-md text-on-surface-variant">Status</th>
-                  <th className="py-4 px-6 text-label-md text-on-surface-variant text-right">Aksi</th>
+                <tr className="border-b border-outline-variant">
+                  <th className="py-3 px-4 text-label-md text-on-surface-variant">Barang</th>
+                  <th className="py-3 px-4 text-label-md text-on-surface-variant">Kategori</th>
+                  <th className="py-3 px-4 text-label-md text-on-surface-variant">Harga/hari</th>
+                  <th className="py-3 px-4 text-label-md text-on-surface-variant">Status</th>
+                  <th className="py-3 px-4 text-label-md text-on-surface-variant text-right">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-surface-container-highest">
+              <tbody>
                 {filteredProducts.map((product) => (
-                  <tr key={product.id} className="hover:bg-surface transition-colors duration-150 group">
-                    <td className="py-4 px-6">
-                      <div className="w-16 h-16 rounded-[var(--radius-md)] overflow-hidden bg-surface-container-high border border-outline-variant">
-                        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                  <tr
+                    key={product.id}
+                    className="border-b border-outline-variant/40 hover:bg-surface-container transition-colors"
+                  >
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-[var(--radius-md)] overflow-hidden bg-surface-container border border-outline-variant shrink-0">
+                          <img
+                            src={getProductImage(product.image_url)}
+                            alt={product.product_name}
+                            loading="lazy"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span className="text-body-sm text-on-surface">{product.product_name || 'Tanpa nama'}</span>
                       </div>
                     </td>
-                    <td className="py-4 px-6">
-                      <span className="text-label-md text-on-background group-hover:text-primary transition-colors">{product.name}</span>
+                    <td className="py-3 px-4 text-body-sm text-on-surface-variant">
+                      {product.category || '-'}
                     </td>
-                    <td className="py-4 px-6 text-body-md text-on-surface-variant">{product.category}</td>
-                    <td className="py-4 px-6 text-label-md text-on-background">Rp {product.price.toLocaleString('id-ID')}</td>
-                    <td className="py-4 px-6">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-caption font-semibold ${
-                        product.status === 'Tersedia'
-                          ? 'bg-[#E6F4EA] text-[#137333]'
-                          : 'bg-surface-variant text-on-surface-variant border border-outline-variant'
-                      }`}>
-                        {product.status}
+                    <td className="py-3 px-4 text-body-sm text-on-surface font-medium">
+                      {formatPrice(product.price)}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-caption ${getStatusClass(product.status)}`}
+                      >
+                        {getStatusLabel(product.status)}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button className="p-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-primary-container/20 transition-all" title="Detail">
-                          <span className="material-symbols-outlined text-[20px]">visibility</span>
-                        </button>
-                        <button className="p-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-primary-container/20 transition-all" title="Edit">
-                          <span className="material-symbols-outlined text-[20px]">edit</span>
-                        </button>
-                        <button className="p-2 rounded-full text-on-surface-variant hover:text-error hover:bg-error-container/50 transition-all" title="Hapus">
-                          <span className="material-symbols-outlined text-[20px]">delete</span>
-                        </button>
-                      </div>
+                    <td className="py-3 px-4 text-right">
+                      <button
+                        type="button"
+                        aria-label={`Hapus ${product.product_name}`}
+                        onClick={() => handleDeleteProduct(product.id)}
+                        className="p-1.5 rounded-[var(--radius-md)] text-on-surface-variant hover:text-error hover:bg-error-container transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -180,23 +221,13 @@ export default function ProductManagement() {
             </table>
           </div>
 
-          {/* Pagination Footer */}
-          <div className="bg-surface px-6 py-4 border-t border-surface-container-highest flex items-center justify-between">
-            <span className="text-caption text-on-surface-variant">Menampilkan 1-{filteredProducts.length} dari 24 barang</span>
-            <div className="flex items-center gap-1">
-              <button className="p-1 rounded-md text-on-surface-variant hover:bg-surface-container-highest disabled:opacity-50" disabled>
-                <span className="material-symbols-outlined text-[20px]">chevron_left</span>
-              </button>
-              <button className="w-8 h-8 rounded-md bg-primary-container text-on-primary-container text-label-md flex items-center justify-center">1</button>
-              <button className="w-8 h-8 rounded-md text-on-surface-variant hover:bg-surface-container-highest text-label-md flex items-center justify-center">2</button>
-              <button className="w-8 h-8 rounded-md text-on-surface-variant hover:bg-surface-container-highest text-label-md flex items-center justify-center">3</button>
-              <button className="p-1 rounded-md text-on-surface-variant hover:bg-surface-container-highest">
-                <span className="material-symbols-outlined text-[20px]">chevron_right</span>
-              </button>
-            </div>
+          <div className="px-4 py-3 border-t border-outline-variant">
+            <span className="text-caption text-on-surface-variant">
+              Menampilkan {filteredProducts.length} dari {products.length} barang
+            </span>
           </div>
         </div>
-      </main>
+      )}
     </>
   );
 }

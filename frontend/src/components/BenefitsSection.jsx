@@ -1,28 +1,41 @@
 const benefits = [
-  { id: 1, title: 'Mudah dan cepat', icon: 'bolt' },
-  { id: 2, title: 'Aman dan terpercaya', icon: 'shield' },
-  { id: 3, title: 'Khusus mahasiswa UNNES', icon: 'school' },
-  { id: 4, title: 'Sistem booking jelas', icon: 'fact_check' },
+  {
+    title: 'Harga mahasiswa',
+    description: 'Barang yang mahal disewa dengan harga jauh di bawah harga toko.',
+    icon: 'savings',
+  },
+  {
+    title: 'Terpercaya',
+    description: 'Setiap akun diverifikasi admin sebelum bisa menyewa.',
+    icon: 'verified_user',
+  },
+  {
+    title: 'Di dekat campus',
+    description: 'Serah terima langsung di area UNNES, tanpa ongkir.',
+    icon: 'location_on',
+  },
 ];
 
 export default function BenefitsSection() {
   return (
-    <section className="py-[var(--spacing-xl)] px-[var(--spacing-md)] max-w-[1280px] mx-auto">
-      <h2 className="text-h2 font-heading mb-[var(--spacing-md)] text-center text-on-surface">
-        Kenapa NesRent?
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[var(--spacing-md)]">
-        {benefits.map((benefit) => (
-          <div
-            key={benefit.id}
-            className="bg-surface p-[var(--spacing-lg)] rounded-[var(--radius-xl)] shadow-[0_4px_20px_0_rgba(31,41,55,0.04)] flex flex-col items-start gap-[var(--spacing-xs)]"
-          >
-            <span className="material-symbols-outlined text-primary text-[32px] bg-primary-container/20 p-[var(--spacing-xs)] rounded-full">
-              {benefit.icon}
-            </span>
-            <h3 className="text-label-md text-on-surface">{benefit.title}</h3>
-          </div>
-        ))}
+    <section id="keunggulan" className="py-[var(--spacing-xl)] px-[var(--spacing-md)] border-t border-outline-variant">
+      <div className="max-w-[1280px] mx-auto">
+        <div className="max-w-xl mb-[var(--spacing-lg)]">
+          <p className="text-label-sm text-primary">Keunggulan</p>
+          <h2 className="font-heading text-h2 text-on-surface mt-2">Kenapa NesRent</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-[var(--spacing-md)]">
+          {benefits.map((benefit) => (
+            <div key={benefit.title} className="panel p-[var(--spacing-lg)] flex flex-col gap-3">
+              <span className="w-11 h-11 rounded-[var(--radius-md)] bg-primary-container text-on-primary-container grid place-items-center">
+                <span className="material-symbols-outlined text-[22px]">{benefit.icon}</span>
+              </span>
+              <h3 className="font-heading text-h3 text-on-surface">{benefit.title}</h3>
+              <p className="text-body-md text-on-surface-variant">{benefit.description}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

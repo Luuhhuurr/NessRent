@@ -1,5 +1,5 @@
-import api from './api';
-import { saveAuth, clearAuth } from '../components/ProtectedRoute';
+import api from '../lib/api';
+import { saveAuth, clearAuth } from '../lib/auth';
 
 export const authService = {
   login: async (credentials) => {
@@ -16,6 +16,8 @@ export const authService = {
       email: userData.email,
       password: userData.password,
       nim: userData.nim,
+      faculty: userData.faculty,
+      phone: userData.phone,
     });
     return response.data;
   },

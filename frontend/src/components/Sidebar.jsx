@@ -1,47 +1,61 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { clearAuth } from '../lib/auth';
 
 const navItems = [
-  { icon: 'dashboard', label: 'Dashboard', href: '/dashboard', active: true },
-  { icon: 'category', label: 'Barang', href: '/products' },
+  { icon: 'dashboard', label: 'Dashboard', href: '/dashboard' },
+  { icon: 'category', label: 'Katalog', href: '/products' },
   { icon: 'receipt', label: 'Transaksi', href: '/history' },
-  { icon: 'account_circle', label: 'Profil', href: '/profile' },
+  { icon: 'location_on', label: 'Lokasi Penyerahan', href: '/dashboard/penyerahan' },
 ];
 
 export default function Sidebar() {
-  return (
-    <aside className="hidden md:flex flex-col gap-[var(--spacing-xs)] p-[var(--spacing-md)] w-64 border-r border-outline-variant bg-surface shadow-sm fixed left-0 top-0 h-screen z-50">
-      {/* Brand */}
-      <div className="mb-[var(--spacing-lg)]">
-        <Link to="/" className="block">
-          <h1 className="font-heading text-h3 font-extrabold text-primary">NesRent</h1>
-          <p className="text-caption text-on-surface-variant">Student Marketplace</p>
-        </Link>
-      </div>
+  const location = useLocation();
+  const navigate = useNavigate();
 
-      {/* Navigation */}
-      <nav className="flex-1 flex flex-col gap-[var(--spacing-xs)]">
+  const isActive = (href) =>
+    href === '/dashboard' ? location.pathname === '/dashboard' : location.pathname.startsWith(href);
+
+  const handleLogout = () => {
+    clearAuth();
+    navigate('/', { replace: true });
+  };
+
+  return (
+    <aside className="hidden md:flex flex-col gap-[var(--spacing-sm)] p-[var(--spacing-md)] w-64 border-r border-outline-variant bg-surface-container-lowest fixed left-0 top-0 h-screen z-50">
+      <Link to="/" className="flex items-center gap-2.5 mb-[var(--spacing-lg)] px-2">
+        <span className="w-8 h-8 rounded-[var(--radius-md)] bg-primary grid place-items-center">
+          <span className="material-symbols-outlined text-on-primary text-[18px]">handshake</span>
+        </span>
+        <span>
+          <span className="block font-heading text-h3 font-extrabold text-on-surface leading-none">NesRent</span>
+          <span className="block text-caption text-on-surface-variant mt-1">Student Marketplace</span>
+        </span>
+      </Link>
+
+      <nav className="flex-1 flex flex-col gap-1">
         {navItems.map((item) => (
           <Link
             key={item.href}
             to={item.href}
-            className={`flex items-center gap-3 ${item.active ? 'bg-primary-container text-on-primary-container' : 'text-on-surface-variant'} px-4 py-3 rounded-[var(--radius-lg)] ${!item.active ? 'hover:bg-surface-container-high' : ''} transition-all duration-200`}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] transition-colors ${
+              isActive(item.href)
+                ? 'bg-primary-container text-on-primary-container'
+                : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+            }`}
           >
-            <span className={`material-symbols-outlined ${item.active ? 'fill-1' : ''}`}>{item.icon}</span>
+            <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
             <span className="text-label-md">{item.label}</span>
           </Link>
         ))}
       </nav>
 
-      {/* Logout */}
-      <div className="mt-auto">
-        <Link
-          to="/logout"
-          className="flex items-center gap-3 text-error px-4 py-3 hover:bg-error-container rounded-[var(--radius-lg)] transition-all duration-200"
-        >
-          <span className="material-symbols-outlined">logout</span>
-          <span className="text-label-md">Keluar</span>
-        </Link>
-      </div>
+      <button
+        onClick={handleLogout}
+        className="flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] text-on-surface-variant hover:bg-error-container hover:text-on-error-container transition-colors"
+      >
+        <span className="material-symbols-outlined text-[20px]">logout</span>
+        <span className="text-label-md">Keluar</span>
+      </button>
     </aside>
   );
 }

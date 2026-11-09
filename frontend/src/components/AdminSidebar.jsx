@@ -1,84 +1,61 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { clearAuth } from '../lib/auth';
 
 const navItems = [
   { icon: 'dashboard', label: 'Dashboard', href: '/admin' },
   { icon: 'inventory_2', label: 'Manajemen Barang', href: '/admin/products' },
-  { icon: 'how_to_reg', label: 'Verifikasi User', href: '/admin/verify-user' },
+  { icon: 'group', label: 'Pengguna', href: '/admin/users' },
   { icon: 'receipt_long', label: 'Transaksi', href: '/admin/transactions' },
-  { icon: 'person_off', label: 'Blacklist', href: '/admin/blacklist-user' },
-];
-
-const bottomNavItems = [
-  { icon: 'settings', label: 'Settings', href: '/admin/settings' },
-  { icon: 'logout', label: 'Logout', href: '/logout', isDanger: true },
 ];
 
 export default function AdminSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
 
-  const isActive = (href) => {
-    if (href === '/admin') {
-      return location.pathname === '/admin';
-    }
-    return location.pathname.startsWith(href);
+  const isActive = (href) =>
+    href === '/admin' ? location.pathname === '/admin' : location.pathname.startsWith(href);
+
+  const handleLogout = () => {
+    clearAuth();
+    navigate('/', { replace: true });
   };
 
   return (
-    <nav className="bg-surface-container-lowest h-screen w-72 flex-col fixed left-0 top-0 shadow-sm z-50 flex py-[var(--spacing-md)] gap-[var(--spacing-md)]">
-      {/* Brand */}
-      <div className="px-6 pb-[var(--spacing-md)]">
-        <h1 className="font-heading text-h3 font-extrabold text-primary">NesRent Admin</h1>
-        <p className="text-caption text-on-surface-variant mt-[var(--spacing-xs)]">
-          Rental Management Platform
-        </p>
-      </div>
+    <aside className="hidden md:flex flex-col gap-[var(--spacing-sm)] p-[var(--spacing-md)] w-64 border-r border-outline-variant bg-surface-container-lowest fixed left-0 top-0 h-screen z-50">
+      <Link to="/" className="flex items-center gap-2.5 mb-[var(--spacing-lg)] px-2">
+        <span className="w-8 h-8 rounded-[var(--radius-md)] bg-primary grid place-items-center">
+          <span className="material-symbols-outlined text-on-primary text-[18px]">admin_panel_settings</span>
+        </span>
+        <span>
+          <span className="block font-heading text-h3 font-extrabold text-on-surface leading-none">NesRent</span>
+          <span className="block text-caption text-on-surface-variant mt-1">Admin Console</span>
+        </span>
+      </Link>
 
-      {/* Quick Add Button */}
-      <div className="px-6 py-[var(--spacing-md)]">
-        <Link
-          to="/admin/add-product"
-          className="w-full bg-primary-container text-on-primary-container text-label-md py-3 px-4 rounded-[var(--radius-xl)] flex items-center justify-center gap-2 hover:bg-inverse-primary transition-colors"
-        >
-          <span className="material-symbols-outlined text-[20px]">add</span>
-          + Tambah Barang
-        </Link>
-      </div>
-
-      {/* Navigation */}
-      <div className="flex-1 flex flex-col gap-[var(--spacing-xs)] px-2 overflow-y-auto">
+      <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">
         {navItems.map((item) => (
           <Link
             key={item.href}
             to={item.href}
-            className={`px-4 py-3 mx-2 rounded-[var(--radius-lg)] transition-all duration-200 flex items-center gap-3 ${
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] transition-colors ${
               isActive(item.href)
-                ? 'text-on-primary-container bg-primary-container font-bold scale-95'
-                : 'text-on-surface-variant hover:bg-surface-container-highest'
+                ? 'bg-primary-container text-on-primary-container'
+                : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
             }`}
           >
-            <span className="material-symbols-outlined">{item.icon}</span>
+            <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
             <span className="text-label-md">{item.label}</span>
           </Link>
         ))}
-      </div>
+      </nav>
 
-      {/* Bottom Navigation */}
-      <div className="px-2 pt-4 border-t border-surface-container-highest mt-auto pb-[var(--spacing-md)]">
-        {bottomNavItems.map((item) => (
-          <Link
-            key={item.href}
-            to={item.href}
-            className={`px-4 py-3 mx-2 rounded-[var(--radius-lg)] transition-all duration-200 flex items-center gap-3 ${
-              item.isDanger
-                ? 'text-error hover:bg-error-container'
-                : 'text-on-surface-variant hover:bg-surface-container-highest'
-            }`}
-          >
-            <span className="material-symbols-outlined">{item.icon}</span>
-            <span className="text-label-md">{item.label}</span>
-          </Link>
-        ))}
-      </div>
-    </nav>
+      <button
+        onClick={handleLogout}
+        className="flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] text-on-surface-variant hover:bg-error-container hover:text-on-error-container transition-colors"
+      >
+        <span className="material-symbols-outlined text-[20px]">logout</span>
+        <span className="text-label-md">Keluar</span>
+      </button>
+    </aside>
   );
 }

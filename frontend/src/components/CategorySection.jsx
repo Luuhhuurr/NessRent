@@ -1,28 +1,45 @@
+import { Link } from 'react-router-dom';
+
 const categories = [
-  { id: 1, name: 'Jas', icon: 'checkroom' },
-  { id: 2, name: 'Kamera', icon: 'photo_camera' },
-  { id: 3, name: 'Motor', icon: 'two_wheeler' },
-  { id: 4, name: 'Sound System', icon: 'speaker' },
+  { name: 'Elektronik', icon: 'devices', description: 'Kamera, laptop, audio' },
+  { name: 'Kendaraan', icon: 'two_wheeler', description: 'Motor, sepeda, mobil' },
+  { name: 'Fashion', icon: 'checkroom', description: 'Tas, sepatu, jacket' },
+  { name: 'Alat Camping', icon: 'camping', description: 'Tenda, tenda, matras' },
 ];
 
 export default function CategorySection() {
   return (
-    <section className="py-[var(--spacing-lg)] px-[var(--spacing-md)] bg-surface-container-low">
+    <section id="kategori" className="py-[var(--spacing-lg)] px-[var(--spacing-md)] border-t border-outline-variant">
       <div className="max-w-[1280px] mx-auto">
-        <h2 className="text-h2 font-heading mb-[var(--spacing-md)] text-center text-on-surface">
-          Kategori Barang
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-[var(--spacing-md)]">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-[var(--spacing-md)]">
+          <div>
+            <p className="text-label-sm text-primary">Kategori</p>
+            <h2 className="font-heading text-h2 text-on-surface mt-2">Yang lagi disewa</h2>
+          </div>
+          <Link
+            to="/products"
+            className="text-label-md text-on-surface-variant hover:text-primary transition-colors inline-flex items-center gap-1"
+          >
+            Lihat semua katalog
+            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-[var(--spacing-md)]">
           {categories.map((category) => (
-            <div
-              key={category.id}
-              className="bg-surface rounded-[var(--radius-xl)] p-[var(--spacing-md)] flex flex-col items-center gap-[var(--spacing-xs)] shadow-[0_4px_20px_0_rgba(31,41,55,0.04)] hover:shadow-[0_8px_24px_0_rgba(31,41,55,0.1)] hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+            <Link
+              key={category.name}
+              to={`/products?category=${encodeURIComponent(category.name)}`}
+              className="panel p-[var(--spacing-md)] flex flex-col gap-3 hover:border-outline transition-colors duration-200"
             >
-              <span className="material-symbols-outlined text-primary text-[48px]">
-                {category.icon}
+              <span className="w-11 h-11 rounded-[var(--radius-md)] bg-primary-container text-on-primary-container grid place-items-center">
+                <span className="material-symbols-outlined text-[22px]">{category.icon}</span>
               </span>
-              <span className="text-label-md text-on-surface">{category.name}</span>
-            </div>
+              <span>
+                <span className="block text-label-md text-on-surface">{category.name}</span>
+                <span className="block text-caption text-on-surface-variant mt-1">{category.description}</span>
+              </span>
+            </Link>
           ))}
         </div>
       </div>

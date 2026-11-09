@@ -1,502 +1,386 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { bookingService } from '../services/bookingService';
+import { formatPrice, formatDate, statusLabel, statusTone } from '../lib/format';
 
-const statusConfig = {
-  pending: { label: 'Pending', bg: 'bg-primary-container/20', text: 'text-on-primary-container', border: 'border-primary-container' },
-  approved: { label: 'Disetujui', bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200' },
-  rejected: { label: 'Ditolak', bg: 'bg-red-100', text: 'text-red-800', border: 'border-red-200' },
-  completed: { label: 'Selesai', bg: 'bg-surface-variant', text: 'text-on-surface-variant', border: 'border-surface-variant' },
-  cancelled: { label: 'Dibatalkan', bg: 'bg-surface-variant', text: 'text-on-surface-variant', border: 'border-surface-variant' },
-};
+const STATUS_FILTERS = [
+  { value: '', label: 'Semua' },
+  { value: 'pending', label: 'Menunggu' },
+  { value: 'approved', label: 'Disetujui' },
+  { value: 'completed', label: 'Selesai' },
+  { value: 'rejected', label: 'Ditolak' },
+];
 
-const formatPrice = (price) => {
-  if (!price && price !== 0) return 'Rp 0';
-  const num = (typeof price === 'number' ? price : parseFloat(price) || 0) * 1000;
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(num);
-};
-
-const formatDate = (dateStr) => {
-  if (!dateStr) return '-';
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('id-ID', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-};
-
-const statusFilters = [
-  { key: '', label: 'Semua' },
-  { key: 'pending', label: 'Pending' },
-  { key: 'approved', label: 'Disetujui' },
-  { key: 'rejected', label: 'Ditolak' },
-  { key: 'completed', label: 'Selesai' },
+const STATUS_FLOW = [
+  { value: 'pending', label: 'Menunggu' },
+  { value: 'approved', label: 'Disetujui' },
+  { value: 'completed', label: 'Selesai' },
 ];
 
 export default function TransactionManagement() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [activeFilter, setActiveFilter] = useState('Semua');
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedBooking, setSelectedBooking] = useState(null);
-  const [adminNotes, setAdminNotes] = useState('');
+  const [actionError, setActionError] = useState(null);
+  const [actionMessage, setActionMessage] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  const fetchBookings = useCallback(async () => {
+    const params = { limit: 50 };
+    if (statusFilter) params.status = statusFilter;
+
+    const response = await bookingService.getAllBookings(params);
+    return response?.data?.bookings ?? [];
+  }, [statusFilter]);
 
   useEffect(() => {
-    fetchBookings(statusFilter);
-  }, []);
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        setBookings(await fetchBookings());
+      } catch (err) {
+        setBookings([]);
+        setError(err?.response?.data?.message || 'Gagal memuat daftar transaksi.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchBookings = async (currentStatus) => {
-  setLoading(true);
-  console.log('%c====================================', 'color: #ff0055; font-weight: bold;');
-  console.log('%c[DIAGNOSTIC] STARTING FETCH', 'color: #00ffcc; font-weight: bold;');
-
-  // CAPTURE THE EXACT PARAMETER PASSED - never trust defaults!
-  console.log('[DIAGNOSTIC] currentStatus ARGUMENT received:', JSON.stringify(currentStatus));
-  console.log('[DIAGNOSTIC] currentStatus TYPE:', typeof currentStatus);
-  console.log('[DIAGNOSTIC] currentStatus is TRUTHY?:', Boolean(currentStatus));
-
-  // If argument was falsy, check what the state is
-  if (!currentStatus) {
-    console.log('[DIAGNOSTIC] ⚠️ currentStatus is falsy! Falling back to statusFilter state.');
-    currentStatus = statusFilter;
-    console.log('[DIAGNOSTIC] After fallback, currentStatus now:', JSON.stringify(currentStatus));
-  }
-
-  const effectiveStatus = currentStatus;
-  console.log('[DIAGNOSTIC] FINAL effectiveStatus to use:', JSON.stringify(effectiveStatus));
-
-  try {
-    const params = { limit: 50 };
-    if (effectiveStatus) {
-      params.status = effectiveStatus;
-    }
-
-    console.log('[fetchBookings] Calling API with params:', params);
-    const response = await bookingService.getAllBookings(params);
-
-    // ============================================================
-    // SAFE ARRAY EXTRACTION from various response shapes
-    // Backend sends: { success: true, data: { bookings: [...] } }
-    // bookingService returns: axios response.data (the parsed body)
-    // ============================================================
-    console.log('[fetchBookings] Full response object keys:', Object.keys(response || {}));
-
-    let extractedBookings = [];
-
-    // Check each possible path and log results
-    if (response && response.data && Array.isArray(response.data.bookings)) {
-      console.log('[fetchBookings] Found array at: response.data.bookings');
-      extractedBookings = response.data.bookings;
-    } else if (response && response.data && response.data.data && Array.isArray(response.data.data)) {
-      console.log('[fetchBookings] Found array at: response.data.data');
-      extractedBookings = response.data.data;
-    } else if (response && response.data && Array.isArray(response.data)) {
-      console.log('[fetchBookings] Found array at: response.data (direct)');
-      extractedBookings = response.data;
-    } else if (response && response.bookings && Array.isArray(response.bookings)) {
-      console.log('[fetchBookings] Found array at: response.bookings');
-      extractedBookings = response.bookings;
-    } else if (response && Array.isArray(response)) {
-      console.log('[fetchBookings] Found array at: response (direct)');
-      extractedBookings = response;
-    } else {
-      console.log('[fetchBookings] WARNING: Could not find array! Logging full response:');
-      console.log('[fetchBookings] response:', JSON.stringify(response, null, 2));
-    }
-
-    console.log('[fetchBookings] SUCCESS! Extracted Rows Count:', extractedBookings.length);
-    if (extractedBookings.length > 0) {
-      console.log('[fetchBookings] First item keys:', Object.keys(extractedBookings[0]));
-      console.log('[fetchBookings] First item:', extractedBookings[0]);
-    }
-
-    setBookings(extractedBookings);
-  } catch (err) {
-    console.error('%c[DIAGNOSTIC] CRITICAL API ERROR:', 'color: #ff0000; font-weight: bold;', err);
-    console.log('[DIAGNOSTIC] Error Response Data:', err.response?.data);
-    setBookings([]);
-  } finally {
-    setLoading(false);
-    console.log('%c[DIAGNOSTIC] ENDING FETCH', 'color: #00ffcc; font-weight: bold;');
-    console.log('%c====================================', 'color: #ff0055; font-weight: bold;');
-  }
-};
-
-  const handleTabChange = (statusKey) => {
-    console.log('[handleTabChange] Switching to status:', statusKey);
-    setStatusFilter(statusKey);
-    setActiveFilter(statusFilters.find(f => f.key === statusKey)?.label || statusKey);
-    fetchBookings(statusKey);
-  };
+    load();
+  }, [fetchBookings, reloadKey]);
 
   const handleUpdateStatus = async (bookingId, newStatus) => {
-    console.log('>>>====================================');
-    console.log('>>> [handleUpdateStatus] FUNCTION CALLED!');
-    console.log('>>> [handleUpdateStatus] bookingId:', bookingId, '| Type:', typeof bookingId);
-    console.log('>>> [handleUpdateStatus] newStatus:', newStatus);
-    console.log('>>> [handleUpdateStatus] selectedBooking:', selectedBooking);
-
-    if (!bookingId) {
-      console.error('>>> [handleUpdateStatus] ERROR: bookingId is undefined or null!');
-      alert('Error: Booking ID not found');
-      return;
-    }
-
-    if (!selectedBooking) {
-      console.error('>>> [handleUpdateStatus] ERROR: selectedBooking is null!');
-      alert('Error: No booking selected');
-      return;
-    }
-
+    setActionError(null);
+    setActionMessage(null);
     try {
-      console.log('>>> [handleUpdateStatus] Calling bookingService.updateBookingStatus...');
-      const response = await bookingService.updateBookingStatus(bookingId, newStatus);
-      console.log('>>> [handleUpdateStatus] API SUCCESS! Response:', response);
-
-      // ============================================================
-      // CRITICAL: Force React to re-fetch the latest bookings
-      // based on the currently active tab filter
-      // ============================================================
-      console.log('>>> [handleUpdateStatus] Re-fetching bookings with current statusFilter:', statusFilter);
-      await fetchBookings(statusFilter);
-
-      // Close the detail sidebar/modal so user sees the refreshed table
-      console.log('>>> [handleUpdateStatus] Closing detail panel...');
+      await bookingService.updateBookingStatus(bookingId, newStatus);
+      setReloadKey((key) => key + 1);
       setSelectedBooking(null);
-
-      // Show success message
-      alert(`Status transaksi berhasil diperbarui menjadi: ${newStatus}`);
-      console.log('>>> [handleUpdateStatus] COMPLETE! UI should now show updated data.');
+      setActionMessage(`Status transaksi #${bookingId} diubah menjadi ${statusLabel(newStatus)}.`);
     } catch (err) {
-      console.error('>>> [handleUpdateStatus] CRITICAL ERROR:', err);
-      alert('Gagal mengupdate status: ' + (err.response?.data?.message || err.message));
+      setActionError(err?.response?.data?.message || 'Gagal mengubah status transaksi.');
     }
-    console.log('>>>====================================');
+  };
+
+  const handleDelete = async (bookingId) => {
+    setActionError(null);
+    setActionMessage(null);
+    try {
+      await bookingService.deleteBooking(bookingId);
+      setReloadKey((key) => key + 1);
+      setSelectedBooking(null);
+      setActionMessage(`Transaksi #${bookingId} berhasil dihapus.`);
+    } catch (err) {
+      setActionError(err?.response?.data?.message || 'Gagal menghapus transaksi.');
+    }
   };
 
   const filteredBookings = bookings.filter((booking) => {
-    const searchTerm = searchQuery?.toLowerCase().trim();
-    if (!searchTerm) return true; // If search bar is empty, allow ALL records!
+    const term = searchQuery.toLowerCase().trim();
+    if (!term) return true;
 
-    // Use the correct properties returned by our backend SQL query
-    // Backend maps: u.name as customer_name, u.nim as customer_nim, p.product_name
-    const userName = booking.customer_name || booking.user_name || booking.name || '';
-    const productName = booking.product_name || '';
-    const userNim = booking.customer_nim || booking.nim || '';
-    const bookingId = booking.id?.toString() || '';
-
-    return userName.toLowerCase().includes(searchTerm) ||
-           productName.toLowerCase().includes(searchTerm) ||
-           userNim.toString().includes(searchTerm) ||
-           bookingId.includes(searchTerm);
+    return (
+      String(booking.customer_name ?? '').toLowerCase().includes(term) ||
+      String(booking.customer_nim ?? '').includes(term) ||
+      String(booking.product_name ?? '').toLowerCase().includes(term) ||
+      String(booking.id).includes(term)
+    );
   });
 
-  const getStatusConfig = (status) => statusConfig[status] || statusConfig.pending;
+  const selectedStage = STATUS_FLOW.findIndex((stage) => stage.value === selectedBooking?.status);
 
   return (
     <>
-      {/* TopAppBar */}
-      <header className="bg-surface flex justify-between items-center px-[var(--spacing-md)] py-[var(--spacing-xs)] w-full sticky top-0 z-40">
-        <div className="flex items-center gap-[var(--spacing-md)] flex-1">
-          <div className="relative w-full max-w-md hidden md:block">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari nama user / barang..."
-              className="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-surface-container-highest rounded-[var(--radius-lg)] text-on-surface focus:ring-2 focus:ring-primary-container focus:outline-none transition-shadow text-body-md"
-            />
-          </div>
+      <div className="mb-[var(--spacing-lg)]">
+        <h1 className="font-heading text-h2 text-on-surface">Manajemen transaksi</h1>
+        <p className="text-body-md text-on-surface-variant mt-1">
+          Tinjau, setujui, dan selesaikan booking dari mahasiswa.
+        </p>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-[var(--spacing-md)] md:items-center justify-between mb-[var(--spacing-md)]">
+        <div className="relative w-full md:w-72">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
+            search
+          </span>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari peminjam atau barang..."
+            className="w-full pl-10 pr-3 py-2.5 bg-surface-container border border-outline-variant rounded-[var(--radius-md)] text-body-sm text-on-surface placeholder:text-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/25 outline-none transition-colors"
+          />
         </div>
-        <div className="flex items-center gap-[var(--spacing-md)]">
-          <button className="text-on-surface-variant hover:bg-primary-container/10 p-[var(--spacing-base)] rounded-full transition-colors flex items-center justify-center focus:ring-2 focus:ring-primary-container outline-none">
-            <span className="material-symbols-outlined">notifications</span>
-          </button>
-          <button className="text-on-surface-variant hover:bg-primary-container/10 p-[var(--spacing-base)] rounded-full transition-colors flex items-center justify-center focus:ring-2 focus:ring-primary-container outline-none">
-            <span className="material-symbols-outlined">settings</span>
-          </button>
-          <div className="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden cursor-pointer hover:ring-2 ring-primary-container transition-all ml-2">
-            <img
-              alt="Administrator profile"
-              src="https://lh3.googleusercontent.com/aida/ADBb0uhpdApwkfHA_CWRdIaecUXwpQ2S5SNlK8rIaaRXqn-7Q8bNAJcZyqIxZ0d0MsuJg_oRISJ1oCrcFVspLaDNzVIKfinL9ZJkz7LCeFg70KJmifcSGMccGVGXwoXkhidpEbZbZypdsylLJmOfET7EDrlQ2gqkpynWpKgF0WPTI5xVMoz4c-VAqXJaOpGWAzCKx0y1gRUhxWfUgc3bicLKP5cb2LrG2pOERNyxZEIih6INxPL_ZMyuU3xeISlVYSK9T0gCxpanjXVlDuQ"
-              className="w-full h-full object-cover"
-            />
-          </div>
+
+        <div className="flex gap-[var(--spacing-xs)] overflow-x-auto">
+          {STATUS_FILTERS.map((filter) => (
+            <button
+              key={filter.value || 'all'}
+              onClick={() => setStatusFilter(filter.value)}
+              className={`whitespace-nowrap px-3 py-1.5 rounded-full text-label-md transition-colors ${
+                statusFilter === filter.value
+                  ? 'bg-primary text-on-primary'
+                  : 'bg-surface-container text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
+              {filter.label}
+            </button>
+          ))}
         </div>
-      </header>
+      </div>
 
-      {/* Page Content */}
-      <main className="p-[var(--spacing-md)] pb-[var(--spacing-xl)] min-h-[calc(100vh-80px)] flex gap-[var(--spacing-lg)]">
-        {/* Left Column: Table */}
-        <div className="flex-1 flex flex-col gap-[var(--spacing-lg)]">
-          {/* Page Header */}
-          <div>
-            <h1 className="font-heading text-h1 text-on-surface">Manajemen Transaksi</h1>
-            <p className="text-body-lg text-secondary mt-2">Kelola semua booking penyewaan</p>
-          </div>
+      {actionMessage && (
+        <div className="rounded-[var(--radius-md)] bg-success-container/40 border border-success/25 p-3 mb-[var(--spacing-md)] flex items-center gap-2">
+          <span className="material-symbols-outlined text-success text-[20px]">check_circle</span>
+          <p className="text-body-sm text-on-success-container">{actionMessage}</p>
+        </div>
+      )}
 
-          {/* Filters & Controls */}
-          <div className="flex flex-col sm:flex-row gap-[var(--spacing-md)] items-end justify-between">
-            <div className="flex items-center gap-[var(--spacing-sm)] bg-surface-container-lowest p-1 rounded-[var(--radius-xl)] shadow-[0_4px_20px_rgba(31,41,55,0.04)] border border-surface-variant w-full sm:w-auto overflow-x-auto">
-              {statusFilters.map((filter, index) => (
-                <button
-                  key={filter.key}
-                  onClick={() => {
-                    console.log('[TAB CLICK] index:', index, '| filter.key:', filter.key, '| filter.label:', filter.label);
-                    handleTabChange(filter.key);
-                  }}
-                  className={`px-[var(--spacing-md)] py-2 rounded-[var(--radius-lg)] text-label-md transition-colors whitespace-nowrap ${
-                    activeFilter === filter.label
-                      ? 'bg-primary-container text-on-primary-container font-bold'
-                      : 'text-on-surface-variant hover:bg-surface-container-low'
-                  }`}
-                >
-                  {filter.label}
-                </button>
-              ))}
-            </div>
-          </div>
+      {actionError && (
+        <div className="rounded-[var(--radius-md)] bg-error-container/40 border border-error/30 p-3 mb-[var(--spacing-md)] flex items-center gap-2">
+          <span className="material-symbols-outlined text-error text-[20px]">error</span>
+          <p className="text-body-sm text-on-error-container">{actionError}</p>
+        </div>
+      )}
 
-          {/* Transactions Table */}
-          <div className="bg-surface-container-lowest rounded-[var(--radius-2xl)] shadow-[0_4px_20px_rgba(31,41,55,0.04)] overflow-hidden hover:shadow-[0_12px_32px_rgba(31,41,55,0.08)] transition-shadow border border-surface-variant/50">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-surface-variant bg-surface-container-low/50">
-                    <th className="px-[var(--spacing-md)] py-[var(--spacing-sm)] text-label-md text-on-surface-variant whitespace-nowrap">Nama User</th>
-                    <th className="px-[var(--spacing-md)] py-[var(--spacing-sm)] text-label-md text-on-surface-variant whitespace-nowrap">Barang</th>
-                    <th className="px-[var(--spacing-md)] py-[var(--spacing-sm)] text-label-md text-on-surface-variant whitespace-nowrap">Tanggal Sewa</th>
-                    <th className="px-[var(--spacing-md)] py-[var(--spacing-sm)] text-label-md text-on-surface-variant whitespace-nowrap">Total Harga</th>
-                    <th className="px-[var(--spacing-md)] py-[var(--spacing-sm)] text-label-md text-on-surface-variant whitespace-nowrap">Status</th>
-                    <th className="px-[var(--spacing-md)] py-[var(--spacing-sm)] text-label-md text-on-surface-variant text-right whitespace-nowrap">Aksi</th>
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-[var(--spacing-lg)]">
+        <div className="xl:col-span-3 panel overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-outline-variant">
+                  <th className="px-[var(--spacing-md)] py-3 text-label-md text-on-surface-variant whitespace-nowrap">Peminjam</th>
+                  <th className="px-[var(--spacing-md)] py-3 text-label-md text-on-surface-variant whitespace-nowrap">Barang</th>
+                  <th className="px-[var(--spacing-md)] py-3 text-label-md text-on-surface-variant whitespace-nowrap">Mulai</th>
+                  <th className="px-[var(--spacing-md)] py-3 text-label-md text-on-surface-variant whitespace-nowrap">Total</th>
+                  <th className="px-[var(--spacing-md)] py-3 text-label-md text-on-surface-variant whitespace-nowrap">Status</th>
+                  <th className="px-[var(--spacing-md)] py-3 text-label-md text-on-surface-variant text-right whitespace-nowrap">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="text-body-sm text-on-surface">
+                {loading && (
+                  <tr>
+                    <td colSpan={6} className="px-[var(--spacing-md)] py-10 text-center text-on-surface-variant">
+                      Memuat...
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="text-body-md text-on-surface">
-                  {loading ? (
-                    <tr>
-                      <td colSpan={6} className="px-[var(--spacing-md)] py-[var(--spacing-xl)] text-center text-on-surface-variant">Memuat...</td>
-                    </tr>
-                  ) : error ? (
-                    <tr>
-                      <td colSpan={6} className="px-[var(--spacing-md)] py-[var(--spacing-xl)] text-center text-error">{error}</td>
-                    </tr>
-                  ) : filteredBookings.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="px-[var(--spacing-md)] py-[var(--spacing-xl)] text-center text-on-surface-variant">Tidak ada transaksi</td>
-                    </tr>
-                  ) : (
-                    filteredBookings.map((booking) => {
-                      const statusInfo = getStatusConfig(booking.status);
-                      return (
-                        <tr
-                          key={booking.id}
-                          className={`border-b border-surface-variant/50 hover:bg-surface-container-low/30 transition-colors cursor-pointer ${
-                            selectedBooking?.id === booking.id ? 'bg-primary-container/5' : ''
-                          }`}
-                          onClick={() => setSelectedBooking(booking)}
-                        >
-                          <td className="px-[var(--spacing-md)] py-[var(--spacing-sm)] whitespace-nowrap">
-                            <span className="font-medium text-on-surface">{booking.customer_name || 'User #' + booking.user_id}</span>
-                          </td>
-                          <td className="px-[var(--spacing-md)] py-[var(--spacing-sm)] whitespace-nowrap">{booking.product_name || '-'}</td>
-                          <td className="px-[var(--spacing-md)] py-[var(--spacing-sm)] text-secondary whitespace-nowrap">
-                            {formatDate(booking.start_date || booking.booking_date)}
-                          </td>
-                          <td className="px-[var(--spacing-md)] py-[var(--spacing-sm)] font-medium whitespace-nowrap">
-                            {formatPrice(booking.total_price || booking.price)}
-                          </td>
-                          <td className="px-[var(--spacing-md)] py-[var(--spacing-sm)] whitespace-nowrap">
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-caption font-caption ${statusInfo.bg} ${statusInfo.text} border ${statusInfo.border}`}>
-                              {statusInfo.label}
-                            </span>
-                          </td>
-                          <td className="px-[var(--spacing-md)] py-[var(--spacing-sm)] text-right whitespace-nowrap">
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                className="p-2 rounded-[var(--radius-lg)] text-on-surface hover:bg-surface-container hover:text-primary transition-colors"
-                                onClick={(e) => { e.stopPropagation(); setSelectedBooking(booking); }}
-                              >
-                                <span className="material-symbols-outlined text-[20px]">visibility</span>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
+                )}
 
-            {/* Pagination */}
-            <div className="px-[var(--spacing-md)] py-[var(--spacing-sm)] border-t border-surface-variant bg-surface-container-lowest flex items-center justify-between">
-              <span className="text-caption text-secondary">
-                Menampilkan 1-{filteredBookings.length} dari {bookings.length} transaksi
-              </span>
-              <div className="flex items-center gap-1">
-                <button className="p-1 rounded text-on-surface-variant hover:bg-surface-container disabled:opacity-50" disabled>
-                  <span className="material-symbols-outlined text-[20px]">chevron_left</span>
-                </button>
-                <button className="p-1 rounded text-on-surface-variant hover:bg-surface-container">
-                  <span className="material-symbols-outlined text-[20px]">chevron_right</span>
-                </button>
-              </div>
-            </div>
+                {!loading && error && (
+                  <tr>
+                    <td colSpan={6} className="px-[var(--spacing-md)] py-10 text-center text-error">
+                      {error}
+                    </td>
+                  </tr>
+                )}
+
+                {!loading && !error && filteredBookings.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-[var(--spacing-md)] py-10 text-center text-on-surface-variant">
+                      Tidak ada transaksi
+                    </td>
+                  </tr>
+                )}
+
+                {!loading &&
+                  !error &&
+                  filteredBookings.map((booking) => (
+                    <tr
+                      key={booking.id}
+                      onClick={() => setSelectedBooking(booking)}
+                      className={`border-b border-outline-variant/40 hover:bg-surface-container transition-colors cursor-pointer ${
+                        selectedBooking?.id === booking.id ? 'bg-surface-container' : ''
+                      }`}
+                    >
+                      <td className="px-[var(--spacing-md)] py-3 whitespace-nowrap">
+                        <span className="font-medium">{booking.customer_name || `User #${booking.user_id}`}</span>
+                        {booking.customer_nim && (
+                          <span className="block text-caption text-on-surface-variant">{booking.customer_nim}</span>
+                        )}
+                      </td>
+                      <td className="px-[var(--spacing-md)] py-3 whitespace-nowrap">
+                        {booking.product_name || '-'}
+                      </td>
+                      <td className="px-[var(--spacing-md)] py-3 whitespace-nowrap text-on-surface-variant">
+                        {formatDate(booking.booking_date)}
+                      </td>
+                      <td className="px-[var(--spacing-md)] py-3 whitespace-nowrap font-medium">
+                        {formatPrice(booking.total_price)}
+                      </td>
+                      <td className="px-[var(--spacing-md)] py-3 whitespace-nowrap">
+                        <span className={`inline-flex px-2.5 py-1 rounded-full text-caption ${statusTone(booking.status)}`}>
+                          {statusLabel(booking.status)}
+                        </span>
+                      </td>
+                      <td className="px-[var(--spacing-md)] py-3 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            aria-label="Lihat detail"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedBooking(booking);
+                            }}
+                            className="p-1.5 rounded-[var(--radius-md)] text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">visibility</span>
+                          </button>
+                          {['completed', 'rejected', 'cancelled'].includes(booking.status) && (
+                            <button
+                              type="button"
+                              aria-label="Hapus transaksi"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(booking.id);
+                              }}
+                              className="p-1.5 rounded-[var(--radius-md)] text-error hover:bg-error-container transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">delete</span>
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="px-[var(--spacing-md)] py-3 border-t border-outline-variant flex items-center justify-between">
+            <span className="text-caption text-on-surface-variant">
+              Menampilkan {filteredBookings.length} dari {bookings.length} transaksi
+            </span>
           </div>
         </div>
 
-        {/* Right Column: Detail Panel */}
         {selectedBooking && (
-          <aside className="w-full lg:w-[400px] flex-shrink-0">
-            <div className="bg-surface-container-lowest rounded-[var(--radius-2xl)] shadow-[0_12px_32px_rgba(31,41,55,0.08)] border border-surface-variant p-[var(--spacing-md)] sticky top-24 flex flex-col gap-[var(--spacing-md)]">
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-surface-variant pb-[var(--spacing-sm)]">
-                <h3 className="font-heading text-h3 text-on-surface">Detail Booking</h3>
+          <aside className="xl:col-span-1">
+            <div className="panel p-[var(--spacing-md)] sticky top-24 flex flex-col gap-[var(--spacing-md)]">
+              <div className="flex items-center justify-between border-b border-outline-variant pb-[var(--spacing-sm)]">
+                <h3 className="font-heading text-h3 text-on-surface">Detail booking</h3>
                 <button
-                  className="text-on-surface-variant hover:bg-surface-container p-1 rounded-full transition-colors"
+                  type="button"
+                  aria-label="Tutup detail"
                   onClick={() => setSelectedBooking(null)}
+                  className="p-1 rounded-full text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"
                 >
-                  <span className="material-symbols-outlined">close</span>
+                  <span className="material-symbols-outlined text-[20px]">close</span>
                 </button>
               </div>
 
-              {/* Status Timeline */}
-              <div className="py-[var(--spacing-sm)]">
-                <div className="flex items-center gap-2">
-                  <div className="flex flex-col items-center">
-                    <div className="w-4 h-4 rounded-full bg-primary-container border-2 border-primary-container"></div>
-                    <div className="w-0.5 h-6 bg-surface-variant"></div>
-                  </div>
-                  <div className="pb-6">
-                    <p className="text-label-md text-on-surface">Pending</p>
-                    <p className="text-caption text-secondary">{formatDate(selectedBooking.created_at)}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex flex-col items-center">
-                    <div className={`w-4 h-4 rounded-full border-2 ${
-                      ['approved', 'completed'].includes(selectedBooking.status)
-                        ? 'bg-green-500 border-green-500'
-                        : 'bg-surface-container-highest border-surface-variant'
-                    }`}></div>
-                    <div className="w-0.5 h-6 bg-surface-variant opacity-50"></div>
-                  </div>
-                  <div className="pb-6">
-                    <p className={`text-label-md ${['approved', 'completed'].includes(selectedBooking.status) ? 'text-on-surface' : 'text-secondary'}`}>Disetujui</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex flex-col items-center">
-                    <div className={`w-4 h-4 rounded-full border-2 ${
-                      selectedBooking.status === 'completed'
-                        ? 'bg-green-500 border-green-500'
-                        : 'bg-surface-container-highest border-surface-variant'
-                    }`}></div>
-                  </div>
-                  <div>
-                    <p className={`text-label-md ${selectedBooking.status === 'completed' ? 'text-on-surface' : 'text-secondary'}`}>Selesai</p>
-                  </div>
+              <div className="flex flex-col gap-2">
+                {STATUS_FLOW.map((stage, index) => {
+                  const reached = selectedStage >= index;
+                  return (
+                    <div key={stage.value} className="flex items-center gap-2">
+                      <span
+                        className={`w-2.5 h-2.5 rounded-full ${
+                          reached ? 'bg-primary' : 'bg-outline-variant'
+                        }`}
+                      />
+                      <span
+                        className={`text-body-sm ${reached ? 'text-on-surface' : 'text-on-surface-variant'}`}
+                      >
+                        {stage.label}
+                      </span>
+                      {index === 0 && (
+                        <span className="text-caption text-on-surface-variant ml-auto">
+                          {formatDate(selectedBooking.created_at)}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="rounded-[var(--radius-md)] bg-surface-container p-[var(--spacing-sm)] flex items-center gap-3">
+                <span className="w-9 h-9 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[20px]">person</span>
+                </span>
+                <div className="min-w-0">
+                  <p className="text-body-sm text-on-surface truncate">
+                    {selectedBooking.customer_name || 'Peminjam'}
+                  </p>
+                  <p className="text-caption text-on-surface-variant">
+                    NIM: {selectedBooking.customer_nim || '-'}
+                  </p>
                 </div>
               </div>
 
-              {/* User Info */}
-              <div className="bg-surface-container-low rounded-[var(--radius-xl)] p-[var(--spacing-sm)] flex items-center gap-[var(--spacing-md)]">
-                <div className="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center">
-                  <span className="material-symbols-outlined text-on-surface-variant">person</span>
+              <div className="flex flex-col gap-2">
+                <h4 className="text-label-md text-on-surface border-b border-outline-variant pb-1">Informasi sewa</h4>
+                <div className="flex justify-between items-center gap-3">
+                  <span className="text-body-sm text-on-surface-variant">Barang</span>
+                  <span className="text-body-sm text-on-surface text-right">
+                    {selectedBooking.product_name || '-'}
+                  </span>
                 </div>
-                <div>
-                  <p className="text-label-md text-on-surface">{selectedBooking.customer_name || 'User'}</p>
-                  <p className="text-caption text-secondary">NIM: {selectedBooking.customer_nim || '-'}</p>
+                <div className="flex justify-between items-center gap-3">
+                  <span className="text-body-sm text-on-surface-variant">Periode</span>
+                  <span className="text-body-sm text-on-surface text-right">
+                    {formatDate(selectedBooking.booking_date)} — {formatDate(selectedBooking.end_date)}
+                  </span>
                 </div>
-              </div>
-
-              {/* Rental Info */}
-              <div className="flex flex-col gap-[var(--spacing-sm)]">
-                <h4 className="text-label-md text-on-surface border-b border-surface-variant pb-1">Informasi Sewa</h4>
-                <div className="flex justify-between items-center">
-                  <span className="text-body-md text-secondary">Barang</span>
-                  <span className="font-medium text-on-surface">{selectedBooking.product_name || '-'}</span>
+                <div className="flex justify-between items-center gap-3">
+                  <span className="text-body-sm text-on-surface-variant">Lokasi</span>
+                  <span className="text-body-sm text-on-surface text-right">
+                    {selectedBooking.notes || '-'}
+                  </span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-body-md text-secondary">Tanggal</span>
-                  <span className="font-medium text-on-surface">{formatDate(selectedBooking.start_date || selectedBooking.booking_date)}</span>
-                </div>
-                <div className="mt-2 pt-2 border-t border-surface-variant border-dashed">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-body-md text-secondary">Biaya Sewa</span>
-                    <span className="font-medium text-on-surface">{formatPrice(selectedBooking.total_price || selectedBooking.price)}</span>
-                  </div>
-                  <div className="flex justify-between items-center mt-2 pt-2 border-t border-surface-variant">
-                    <span className="text-label-md text-on-surface">Total Biaya</span>
-                    <span className="font-heading text-h3 text-primary">{formatPrice(selectedBooking.total_price || selectedBooking.price)}</span>
-                  </div>
+                <div className="border-t border-outline-variant pt-2 flex justify-between items-baseline">
+                  <span className="text-label-md text-on-surface">Total biaya</span>
+                  <span className="font-heading text-h3 text-on-surface">
+                    {formatPrice(selectedBooking.total_price)}
+                  </span>
                 </div>
               </div>
 
-              {/* Admin Notes */}
-              <div className="flex flex-col gap-1">
-                <label className="text-label-md text-on-surface">Catatan Admin</label>
-                <textarea
-                  className="w-full p-[var(--spacing-sm)] rounded-[var(--radius-xl)] border border-surface-variant bg-surface-container-lowest text-on-surface text-body-md focus:ring-2 focus:ring-primary-container focus:outline-none transition-shadow resize-none h-20"
-                  placeholder="Tambahkan catatan jika perlu..."
-                  value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
-                />
-              </div>
-
-              {/* Actions - Status: {selectedBooking.status} */}
-              <div className="flex flex-col gap-2 pt-[var(--spacing-md)] border-t border-surface-variant">
-                {selectedBooking.status?.trim() === 'pending' && (
+              <div className="flex flex-col gap-2 pt-[var(--spacing-sm)] border-t border-outline-variant">
+                {selectedBooking.status === 'pending' && (
                   <>
                     <button
-                      className="w-full py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white text-label-md font-semibold transition-colors flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]"
-                      onClick={() => {
-                        console.log('[JSX] Setujui button clicked! selectedBooking.id:', selectedBooking.id);
-                        handleUpdateStatus(selectedBooking.id, 'approved');
-                      }}
+                      type="button"
+                      onClick={() => handleUpdateStatus(selectedBooking.id, 'approved')}
+                      className="w-full py-2.5 rounded-[var(--radius-md)] bg-primary text-on-primary text-label-md font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
                     >
-                      <span className="material-symbols-outlined text-[20px]">check_circle</span>
-                      Setujui Booking
+                      <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                      Setujui booking
                     </button>
                     <button
-                      className="w-full py-3 rounded-xl bg-white border-2 border-red-500 text-red-600 hover:bg-red-50 text-label-md font-semibold transition-colors flex items-center justify-center gap-2"
-                      onClick={() => {
-                        console.log('[JSX] Tolak button clicked! selectedBooking.id:', selectedBooking.id);
-                        handleUpdateStatus(selectedBooking.id, 'rejected');
-                      }}
+                      type="button"
+                      onClick={() => handleUpdateStatus(selectedBooking.id, 'rejected')}
+                      className="w-full py-2.5 rounded-[var(--radius-md)] border border-error text-error text-label-md font-semibold hover:bg-error-container transition-colors flex items-center justify-center gap-2"
                     >
-                      <span className="material-symbols-outlined text-[20px]">cancel</span>
-                      Tolak Booking
+                      <span className="material-symbols-outlined text-[18px]">cancel</span>
+                      Tolak booking
                     </button>
                   </>
                 )}
-                {selectedBooking.status?.trim() === 'approved' && (
+
+                {selectedBooking.status === 'approved' && (
                   <button
-                    className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-label-md font-semibold transition-colors flex items-center justify-center gap-2 shadow-sm"
-                    onClick={() => {
-                      console.log('[JSX] Selesai button clicked! selectedBooking.id:', selectedBooking.id);
-                      handleUpdateStatus(selectedBooking.id, 'completed');
-                    }}
+                    type="button"
+                    onClick={() => handleUpdateStatus(selectedBooking.id, 'completed')}
+                    className="w-full py-2.5 rounded-[var(--radius-md)] bg-primary text-on-primary text-label-md font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
                   >
-                    <span className="material-symbols-outlined text-[20px]">task_alt</span>
-                    Tandai Selesai
+                    <span className="material-symbols-outlined text-[18px]">task_alt</span>
+                    Tandai selesai
                   </button>
                 )}
-                {(selectedBooking.status?.trim() === 'completed' || selectedBooking.status?.trim() === 'rejected' || selectedBooking.status?.trim() === 'cancelled') && (
-                  <p className="text-center text-on-surface-variant text-body-md py-3">Transaksi sudah selesai diproses</p>
+
+                {['completed', 'rejected', 'cancelled'].includes(selectedBooking.status) && (
+                  <p className="text-center text-body-sm text-on-surface-variant py-2">
+                    Transaksi ini sudah diproses.
+                  </p>
                 )}
               </div>
             </div>
           </aside>
         )}
-      </main>
+      </div>
     </>
   );
 }

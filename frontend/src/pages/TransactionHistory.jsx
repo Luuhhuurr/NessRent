@@ -1,86 +1,64 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { bookingService } from '../services/bookingService';
+import { formatPrice, formatDate, getProductImage, statusLabel, statusTone } from '../lib/format';
 
-const formatPrice = (price) => {
-  if (!price && price !== 0) return 'Rp 0';
-  const num = (typeof price === 'number' ? price : parseFloat(price) || 0) * 1000;
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(num);
-};
-
-const formatDate = (dateStr) => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('id-ID', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
-};
-
-const statusConfig = {
-  pending: { label: 'Menunggu', color: 'bg-warning-container text-warning' },
-  approved: { label: 'Disetujui', color: 'bg-[#D1FAE5] text-[#065F46]' },
-  rejected: { label: 'Ditolak', color: 'bg-error-container text-error' },
-  completed: { label: 'Selesai', color: 'bg-secondary-container text-on-secondary-container' },
-  cancelled: { label: 'Dibatalkan', color: 'bg-surface-variant text-on-surface-variant' },
-};
-
-const statusFilters = ['Semua', 'pending', 'approved', 'rejected', 'completed'];
+const STATUS_FILTERS = [
+  { value: '', label: 'Semua' },
+  { value: 'pending', label: 'Menunggu' },
+  { value: 'approved', label: 'Disetujui' },
+  { value: 'completed', label: 'Selesai' },
+  { value: 'rejected', label: 'Ditolak' },
+];
 
 export default function TransactionHistory() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('Semua');
+  const [activeFilter, setActiveFilter] = useState('');
 
-  useEffect(() => {
-    fetchTransactions();
+  const fetchTransactions = useCallback(async () => {
+    const response = await bookingService.getMyBookings(activeFilter || null);
+    return response?.data?.bookings ?? [];
   }, [activeFilter]);
 
-  const fetchTransactions = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const status = activeFilter !== 'Semua' ? activeFilter : null;
-      const response = await bookingService.getMyBookings(status);
-      if (response.success) {
-        setTransactions(response.data);
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        setTransactions(await fetchTransactions());
+      } catch (err) {
+        setError(err?.response?.data?.message || 'Gagal memuat riwayat transaksi.');
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Gagal memuat riwayat transaksi');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    load();
+  }, [fetchTransactions]);
 
   const filteredTransactions = transactions.filter((tx) => {
-    const matchesSearch =
-      tx.product_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tx.id.toString().includes(searchQuery);
-    return matchesSearch;
+    const term = searchQuery.toLowerCase().trim();
+    if (!term) return true;
+    return (
+      String(tx.product_name ?? '').toLowerCase().includes(term) || String(tx.id).includes(term)
+    );
   });
 
   return (
     <>
-      {/* Page Header */}
       <div className="mb-[var(--spacing-lg)]">
-        <h1 className="font-heading text-h1 text-on-surface mb-[var(--spacing-xs)]">
-          Riwayat Transaksi
-        </h1>
-        <p className="text-body-lg text-on-surface-variant">
-          Lihat semua aktivitas penyewaan Anda
+        <h1 className="font-heading text-h2 text-on-surface">Riwayat transaksi</h1>
+        <p className="text-body-md text-on-surface-variant mt-1">
+          Semua aktivitas penyewaan Anda dalam satu daftar.
         </p>
       </div>
 
-      {/* Filters & Search */}
-      <div className="flex flex-col md:flex-row gap-[var(--spacing-xs)] mb-[var(--spacing-lg)] justify-between items-center bg-surface-container-lowest p-[var(--spacing-md)] rounded-[var(--radius-lg)] shadow-[0_4px_20px_rgba(31,41,55,0.04)] border border-outline-variant/30">
-        <div className="relative w-full md:w-1/2 lg:w-1/3">
-          <span className="material-symbols-outlined absolute left-[var(--spacing-sm)] top-1/2 -translate-y-1/2 text-on-surface-variant">
+      <div className="flex flex-col md:flex-row gap-[var(--spacing-md)] md:items-center justify-between mb-[var(--spacing-lg)]">
+        <div className="relative w-full md:w-72">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
             search
           </span>
           <input
@@ -88,141 +66,109 @@ export default function TransactionHistory() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari transaksi..."
-            className="w-full pl-10 pr-[var(--spacing-sm)] py-[var(--spacing-xs)] border border-outline-variant rounded-[var(--radius-md)] bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 text-body-md text-on-surface placeholder:text-on-surface-variant transition-all"
+            className="w-full pl-10 pr-3 py-2.5 bg-surface-container border border-outline-variant rounded-[var(--radius-md)] text-body-sm text-on-surface placeholder:text-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/25 outline-none transition-colors"
           />
         </div>
-        <div className="w-full md:w-auto flex gap-[var(--spacing-xs)] overflow-x-auto pb-[var(--spacing-xs)] md:pb-0">
-          {statusFilters.map((filter) => (
+
+        <div className="flex gap-[var(--spacing-xs)] overflow-x-auto">
+          {STATUS_FILTERS.map((filter) => (
             <button
-              key={filter}
-              onClick={() => setActiveFilter(filter)}
-              className={`whitespace-nowrap px-[var(--spacing-xs)] py-[2px] rounded-full font-label-md text-label-md transition-opacity ${
-                activeFilter === filter
-                  ? 'bg-primary-container text-on-primary-container'
-                  : 'bg-surface text-on-surface-variant border border-outline-variant hover:bg-surface-container-low'
+              key={filter.value || 'all'}
+              onClick={() => setActiveFilter(filter.value)}
+              className={`whitespace-nowrap px-3 py-1.5 rounded-full text-label-md transition-colors ${
+                activeFilter === filter.value
+                  ? 'bg-primary text-on-primary'
+                  : 'bg-surface-container text-on-surface-variant hover:text-on-surface'
               }`}
             >
-              {filter === 'Semua' ? filter : statusConfig[filter]?.label || filter}
+              {filter.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Loading State */}
       {loading && (
-        <div className="space-y-[var(--spacing-xs)]">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-surface-container-lowest rounded-[var(--radius-lg)] p-[var(--spacing-md)] animate-pulse">
-              <div className="flex gap-[var(--spacing-md)]">
-                <div className="w-32 h-24 bg-surface-container rounded-[var(--radius-md)]" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-surface-container rounded w-1/4" />
-                  <div className="h-6 bg-surface-container rounded w-3/4" />
-                  <div className="h-4 bg-surface-container rounded w-1/2" />
-                </div>
-              </div>
-            </div>
+        <div className="flex flex-col gap-[var(--spacing-sm)]">
+          {[0, 1, 2].map((index) => (
+            <div key={index} className="panel p-[var(--spacing-md)] animate-pulse h-32" />
           ))}
         </div>
       )}
 
-      {/* Error State */}
       {error && !loading && (
-        <div className="bg-error-container/20 border border-error-container/50 rounded-[var(--radius-xl)] p-6 text-center">
+        <div className="panel p-[var(--spacing-lg)] text-center">
           <span className="material-symbols-outlined text-error text-[48px] mb-2">error</span>
           <p className="text-body-md text-error">{error}</p>
           <button
             onClick={fetchTransactions}
-            className="mt-4 px-4 py-2 bg-primary-container text-on-primary-container rounded-[var(--radius-lg)] hover:bg-primary-fixed transition-colors"
+            className="mt-4 px-4 py-2 bg-primary text-on-primary rounded-[var(--radius-md)] hover:bg-primary/90 transition-colors"
           >
-            Coba Lagi
+            Coba lagi
           </button>
         </div>
       )}
 
-      {/* Transaction List */}
-      {!loading && !error && (
-        <div className="grid grid-cols-1 gap-[var(--spacing-xs)]">
-          {filteredTransactions.map((tx) => {
-            const statusInfo = statusConfig[tx.status] || { label: tx.status, color: 'bg-surface-variant' };
-            return (
-              <div
-                key={tx.id}
-                className="bg-surface-container-lowest rounded-[var(--radius-lg)] p-[var(--spacing-md)] shadow-[0_4px_20px_rgba(31,41,55,0.04)] hover:shadow-[0_8px_24px_rgba(31,41,55,0.08)] transition-shadow duration-300 flex flex-col md:flex-row gap-[var(--spacing-md)] items-start md:items-center justify-between border border-outline-variant/30"
-              >
-                <div className="flex flex-col md:flex-row gap-[var(--spacing-md)] items-start md:items-center w-full md:w-auto">
-                  {/* Product Image */}
-                  <div className="w-full md:w-32 h-24 bg-surface-container rounded-[var(--radius-md)] shrink-0 overflow-hidden">
-                    <img
-                      src={tx.product_image || 'https://placehold.co/128x96?text=No+Image'}
-                      alt={tx.product_name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => { e.target.src = 'https://placehold.co/128x96?text=No+Image'; }}
-                    />
-                  </div>
-                  {/* Transaction Info */}
-                  <div>
-                    <div className="flex items-center gap-[var(--spacing-xs)] mb-[var(--spacing-xs)]">
-                      <span className={`px-3 py-1 rounded-full font-caption text-caption ${statusInfo.color}`}>
-                        {statusInfo.label}
-                      </span>
-                      <span className="text-outline font-caption text-caption ml-[var(--spacing-xs)]">
-                        #{tx.id}
-                      </span>
-                    </div>
-                    <h3 className="font-heading text-h3 text-on-surface mb-[var(--spacing-xs)]">
-                      {tx.product_name || 'Produk'}
-                    </h3>
-                    <div className="flex items-center gap-[var(--spacing-xs)] text-on-surface-variant text-body-md flex-wrap">
-                      <span className="flex items-center gap-[var(--spacing-xs)]">
-                        <span className="material-symbols-outlined text-[18px]">calendar_today</span>
-                        {formatDate(tx.start_date)}
-                      </span>
-                      {tx.category && (
-                        <span className="ml-2 bg-primary-container/10 px-2 py-0.5 rounded-full text-caption text-primary">
-                          {tx.category}
-                        </span>
-                      )}
-                    </div>
-                    {tx.notes && (
-                      <p className="text-caption text-on-surface-variant mt-1">
-                        Catatan: {tx.notes.substring(0, 50)}
-                        {tx.notes.length > 50 && '...'}
-                      </p>
-                    )}
-                  </div>
+      {!loading && !error && filteredTransactions.length > 0 && (
+        <div className="flex flex-col gap-[var(--spacing-sm)]">
+          {filteredTransactions.map((tx) => (
+            <article
+              key={tx.id}
+              className="panel p-[var(--spacing-md)] flex flex-col md:flex-row gap-[var(--spacing-md)] items-start md:items-center justify-between"
+            >
+              <div className="flex flex-col md:flex-row gap-[var(--spacing-md)] items-start md:items-center w-full md:w-auto min-w-0">
+                <div className="w-full md:w-32 h-24 bg-surface-container rounded-[var(--radius-md)] shrink-0 overflow-hidden">
+                  <img
+                    src={getProductImage(tx.image_url)}
+                    alt={tx.product_name}
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                {/* Amount & Action */}
-                <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto mt-[var(--spacing-xs)] md:mt-0 pt-[var(--spacing-xs)] md:pt-0 border-t md:border-t-0 border-outline-variant/30">
-                  <div className="font-heading text-h3 text-primary mb-0 md:mb-[var(--spacing-xs)]">
-                    {formatPrice(tx.total_price)}
+
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`px-2.5 py-1 rounded-full text-caption ${statusTone(tx.status)}`}>
+                      {statusLabel(tx.status)}
+                    </span>
+                    <span className="text-caption text-on-surface-variant">#{tx.id}</span>
                   </div>
-                  <Link
-                    to={`/booking/${tx.id}`}
-                    className="px-[var(--spacing-xs)] py-[2px] rounded-[var(--radius-md)] border border-on-surface text-on-surface font-label-md text-label-md hover:bg-surface-container-low transition-colors"
-                  >
-                    Lihat Detail
-                  </Link>
+                  <h3 className="text-body-lg text-on-surface truncate">{tx.product_name || 'Barang'}</h3>
+                  <p className="text-body-sm text-on-surface-variant mt-1 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+                    {formatDate(tx.booking_date)} — {formatDate(tx.end_date)}
+                  </p>
+                  {tx.notes && (
+                    <p className="text-caption text-on-surface-variant mt-1 truncate">Catatan: {tx.notes}</p>
+                  )}
                 </div>
               </div>
-            );
-          })}
+
+              <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-3 pt-3 md:pt-0 border-t md:border-t-0 border-outline-variant">
+                <span className="font-heading text-h3 text-on-surface">{formatPrice(tx.total_price)}</span>
+                <Link
+                  to={`/transactions/${tx.id}`}
+                  className="px-3 py-1.5 rounded-[var(--radius-md)] border border-outline text-on-surface text-label-md hover:border-primary hover:text-primary transition-colors"
+                >
+                  Lihat detail
+                </Link>
+              </div>
+            </article>
+          ))}
         </div>
       )}
 
-      {/* Empty State */}
       {!loading && !error && filteredTransactions.length === 0 && (
-        <div className="bg-surface-container-lowest rounded-[var(--radius-lg)] p-[var(--spacing-xl)] text-center border border-outline-variant/30">
-          <span className="material-symbols-outlined text-[48px] text-on-surface-variant mb-[var(--spacing-md)]">receipt_long</span>
+        <div className="panel p-[var(--spacing-xl)] text-center">
+          <span className="material-symbols-outlined text-[48px] text-on-surface-variant mb-3">receipt_long</span>
           <p className="text-body-md text-on-surface-variant">
-            {searchQuery ? 'Tidak ada transaksi yang sesuai pencarian' : 'Belum ada transaksi'}
+            {searchQuery ? 'Tidak ada transaksi yang sesuai pencarian.' : 'Belum ada transaksi.'}
           </p>
           {!searchQuery && (
             <Link
               to="/products"
-              className="inline-block mt-4 px-4 py-2 bg-primary-container text-on-primary-container rounded-[var(--radius-lg)] hover:bg-primary-fixed transition-colors"
+              className="inline-block mt-4 px-4 py-2 bg-primary text-on-primary rounded-[var(--radius-md)] hover:bg-primary/90 transition-colors"
             >
-              Mulai Sewa
+              Mulai sewa
             </Link>
           )}
         </div>

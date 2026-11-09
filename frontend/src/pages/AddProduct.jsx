@@ -1,240 +1,309 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import productService from '../services/productService';
 
-const categories = ['Elektronik', 'Kendaraan', 'Alat Tulis', 'Musik', 'Hobi'];
+const categories = ['Elektronik', 'Kendaraan', 'Fashion', 'Alat Camping'];
 const conditions = ['Sangat Baik', 'Baik', 'Cukup'];
 
+const inputClass =
+  'w-full bg-surface-container border border-outline-variant rounded-[var(--radius-md)] px-3 py-2.5 text-body-sm text-on-surface placeholder:text-on-surface-variant focus:border-primary focus:ring-2 focus:ring-primary/25 outline-none transition-colors';
+
 export default function AddProduct() {
+  const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+
   const [formData, setFormData] = useState({
-    name: '',
+    product_name: '',
     category: 'Elektronik',
-    condition: 'Sangat Baik',
-    pricePerDay: '',
-    stock: '1',
+    condition: 'Baik',
+    price: '',
     description: '',
-    specifications: '',
   });
-  const [uploadedImages, setUploadedImages] = useState([
-    {
-      id: 1,
-      src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDLhlAjr8vE08BaV6mpLA0rziZMRA_NgpvhjztJzpb9hr90fJeP0M2yHNvAeiPFj8QAAhlTW6Ex4VTMkQ4ec3H8_LWdHmAnEAswB9trhl2wuwE3OlwSIZBhbNMnCyxWFdG7-ftVPWB8pHbEAydrE1qltunXr7f0Ra3OGe9ic8_utb2BTQvEfatxyp2c5Zz3dsIgGnB4JmYSSwf8He41ilwsuk3lG-LQoeh0yy4A-SliswnQy3pDCeYMaUgHk24A9ql2bExo7eY67_QA',
-      isMain: true,
-    },
-  ]);
+
+  const [preview, setPreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Product data:', formData, uploadedImages);
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const maxSize = 5 * 1024 * 1024;
+
+    if (!validTypes.includes(file.type)) {
+      setError('Format file harus JPG, PNG, atau WEBP.');
+      return;
+    }
+
+    if (file.size > maxSize) {
+      setError('Ukuran file maksimal 5MB.');
+      return;
+    }
+
+    setSelectedFile(file);
+    setError(null);
+
+    const reader = new FileReader();
+    reader.onload = (event) => setPreview(event.target?.result);
+    reader.readAsDataURL(file);
   };
 
-  const progress = 75; // Mock progress
+  const handleRemoveImage = () => {
+    setPreview(null);
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!formData.product_name.trim()) {
+      setError('Nama barang wajib diisi.');
+      return;
+    }
+
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      setError('Harga per hari wajib diisi.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const payload = new FormData();
+      payload.append('product_name', formData.product_name.trim());
+      payload.append('category', formData.category);
+      payload.append('condition', formData.condition);
+      payload.append('price', parseFloat(formData.price));
+      payload.append('description', formData.description || '');
+
+      if (selectedFile) payload.append('image', selectedFile);
+
+      await productService.createProduct(payload);
+      navigate('/products');
+    } catch (err) {
+      setError(err?.response?.data?.message || err?.message || 'Gagal menyimpan barang. Silakan coba lagi.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const requiredFields = ['product_name', 'price'];
+  const filled = requiredFields.filter((field) => String(formData[field] ?? '').trim()).length;
+  const progress = Math.round((filled / requiredFields.length) * 100);
 
   return (
-    <>
-      {/* TopNavBar */}
-      <nav className="fixed top-0 w-full z-50 flex justify-between items-center px-[var(--spacing-md)] py-[var(--spacing-md)] max-w-[1280px] mx-auto shadow-sm bg-surface">
-        <div className="flex items-center gap-[var(--spacing-xl)]">
-          <Link to="/" className="font-heading text-h2 text-primary">NesRent</Link>
+    <div className="w-full max-w-[1280px] mx-auto px-[var(--spacing-md)] py-[var(--spacing-lg)]">
+      <div className="mb-[var(--spacing-lg)]">
+        <h1 className="font-heading text-h2 text-on-surface">Tambah barang sewa</h1>
+        <p className="text-body-md text-on-surface-variant mt-1">
+          Bagikan barangmu dan bantu sesama mahasiswa.
+        </p>
+      </div>
+
+      {error && (
+        <div className="rounded-[var(--radius-md)] bg-error-container/40 border border-error/30 p-3 mb-[var(--spacing-md)] flex items-center gap-2">
+          <span className="material-symbols-outlined text-error text-[20px]">error</span>
+          <p className="text-body-sm text-on-error-container">{error}</p>
         </div>
-        <div className="flex items-center gap-[var(--spacing-md)]">
-          <button className="bg-primary-container text-on-primary-container text-label-md px-[var(--spacing-md)] py-[var(--spacing-xs)] rounded-[var(--radius-xl)] font-bold active:scale-95 duration-150">
-            Add Product
-          </button>
-          <span className="material-symbols-outlined text-secondary cursor-pointer hover:text-primary transition-colors">notifications</span>
-          <span className="material-symbols-outlined text-secondary cursor-pointer hover:text-primary transition-colors">account_circle</span>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-[var(--spacing-lg)] items-start">
+        <div className="lg:col-span-8 panel p-[var(--spacing-lg)]">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-[var(--spacing-md)]">
+            <div className="flex flex-col gap-[var(--spacing-xs)]">
+              <label className="text-label-md text-on-surface-variant" htmlFor="product_name">
+                Nama barang <span className="text-error">*</span>
+              </label>
+              <input
+                id="product_name"
+                name="product_name"
+                value={formData.product_name}
+                onChange={handleChange}
+                className={inputClass}
+                placeholder="Contoh: Kamera Canon EOS 800D"
+                type="text"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--spacing-md)]">
+              <div className="flex flex-col gap-[var(--spacing-xs)]">
+                <label className="text-label-md text-on-surface-variant" htmlFor="category">
+                  Kategori
+                </label>
+                <select
+                  id="category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className={`${inputClass} cursor-pointer`}
+                >
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-[var(--spacing-xs)]">
+                <label className="text-label-md text-on-surface-variant" htmlFor="condition">
+                  Kondisi
+                </label>
+                <select
+                  id="condition"
+                  name="condition"
+                  value={formData.condition}
+                  onChange={handleChange}
+                  className={`${inputClass} cursor-pointer`}
+                >
+                  {conditions.map((condition) => (
+                    <option key={condition} value={condition}>
+                      {condition}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-[var(--spacing-xs)]">
+              <label className="text-label-md text-on-surface-variant" htmlFor="price">
+                Harga per hari <span className="text-error">*</span>
+              </label>
+              <input
+                id="price"
+                name="price"
+                value={formData.price}
+                onChange={handleChange}
+                className={inputClass}
+                placeholder="50"
+                type="number"
+                min="0"
+              />
+              <p className="text-caption text-on-surface-variant">
+                Dalam ribuan rupiah (contoh: 50 = Rp 50.000 per hari).
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-[var(--spacing-xs)]">
+              <label className="text-label-md text-on-surface-variant" htmlFor="description">
+                Deskripsi
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                className={`${inputClass} resize-none`}
+                placeholder="Jelaskan detail barangmu..."
+                rows={4}
+              />
+            </div>
+
+            <div className="flex flex-col gap-[var(--spacing-xs)]">
+              <label className="text-label-md text-on-surface-variant" htmlFor="image">
+                Unggah foto
+              </label>
+              <input
+                ref={fileInputRef}
+                id="image"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="border border-dashed border-outline-variant rounded-[var(--radius-md)] p-[var(--spacing-lg)] flex flex-col items-center justify-center text-center hover:border-primary hover:bg-surface-container transition-colors"
+              >
+                <span className="material-symbols-outlined text-[32px] text-primary mb-2">cloud_upload</span>
+                <span className="text-label-md text-on-surface">Klik untuk memilih foto</span>
+                <span className="text-caption text-on-surface-variant mt-1">
+                  Maksimal 5MB (JPG, PNG, WEBP)
+                </span>
+              </button>
+
+              {preview && (
+                <div className="w-28 h-28 rounded-[var(--radius-md)] overflow-hidden bg-surface-container relative group">
+                  <img src={preview} alt="Pratinjau" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    aria-label="Hapus foto"
+                    className="absolute top-1 right-1 p-1 rounded-full bg-error text-on-error transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">close</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-[var(--spacing-md)] pt-[var(--spacing-sm)]">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1 bg-primary text-on-primary text-label-md font-semibold py-3 rounded-[var(--radius-md)] hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                    Menyimpan...
+                  </>
+                ) : (
+                  'Simpan & publikasikan'
+                )}
+              </button>
+              <Link
+                to="/products"
+                className="px-6 border border-outline text-on-surface text-label-md font-semibold py-3 rounded-[var(--radius-md)] hover:bg-surface-container transition-colors text-center"
+              >
+                Batal
+              </Link>
+            </div>
+          </form>
         </div>
-      </nav>
 
-      {/* Main Content */}
-      <main className="max-w-[1280px] mx-auto pt-[100px] pb-[var(--spacing-xl)] px-[var(--spacing-md)]">
-        <header className="mb-[var(--spacing-lg)]">
-          <h1 className="font-heading text-h1 text-on-surface">Tambah Barang Sewaan</h1>
-          <p className="text-body-lg text-secondary">Bagikan barangmu dan bantu sesama mahasiswa.</p>
-        </header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-[var(--spacing-lg)] items-start">
-          {/* Left Form Content */}
-          <div className="lg:col-span-8 bg-surface-container-lowest p-[var(--spacing-md)] md:p-[var(--spacing-lg)] rounded-[var(--radius-xl)] shadow-[0px_4px_20px_rgba(31,41,55,0.04)]">
-            <form className="space-y-[var(--spacing-md)]">
-              <div>
-                <label className="block text-label-md mb-[var(--spacing-xs)] text-on-surface-variant">Nama Barang</label>
-                <input
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full border-outline-variant rounded-[var(--radius-lg)] focus:ring-2 focus:ring-primary-container focus:border-primary border-opacity-50 p-[var(--spacing-xs)] text-body-md"
-                  placeholder="Contoh: Kamera Canon EOS 800D"
-                  type="text"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--spacing-md)]">
-                <div>
-                  <label className="block text-label-md mb-[var(--spacing-xs)] text-on-surface-variant">Kategori</label>
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    className="w-full border-outline-variant rounded-[var(--radius-lg)] focus:ring-2 focus:ring-primary-container focus:border-primary border-opacity-50 p-[var(--spacing-xs)] text-body-md appearance-none bg-white"
-                  >
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-label-md mb-[var(--spacing-xs)] text-on-surface-variant">Kondisi</label>
-                  <select
-                    name="condition"
-                    value={formData.condition}
-                    onChange={handleChange}
-                    className="w-full border-outline-variant rounded-[var(--radius-lg)] focus:ring-2 focus:ring-primary-container focus:border-primary border-opacity-50 p-[var(--spacing-xs)] text-body-md appearance-none bg-white"
-                  >
-                    {conditions.map((cond) => (
-                      <option key={cond} value={cond}>{cond}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-[var(--spacing-md)]">
-                <div>
-                  <label className="block text-label-md mb-[var(--spacing-xs)] text-on-surface-variant">Harga per Hari</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-[var(--spacing-xs)] flex items-center pointer-events-none">
-                      <span className="text-secondary text-body-md">Rp</span>
-                    </div>
-                    <input
-                      name="pricePerDay"
-                      value={formData.pricePerDay}
-                      onChange={handleChange}
-                      className="w-full pl-[40px] border-outline-variant rounded-[var(--radius-lg)] focus:ring-2 focus:ring-primary-container focus:border-primary border-opacity-50 p-[var(--spacing-xs)] text-body-md"
-                      placeholder="0"
-                      type="number"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-label-md mb-[var(--spacing-xs)] text-on-surface-variant">Stok</label>
-                  <input
-                    name="stock"
-                    value={formData.stock}
-                    onChange={handleChange}
-                    className="w-full border-outline-variant rounded-[var(--radius-lg)] focus:ring-2 focus:ring-primary-container focus:border-primary border-opacity-50 p-[var(--spacing-xs)] text-body-md"
-                    placeholder="1"
-                    type="number"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-label-md mb-[var(--spacing-xs)] text-on-surface-variant">Deskripsi</label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  className="w-full border-outline-variant rounded-[var(--radius-lg)] focus:ring-2 focus:ring-primary-container focus:border-primary border-opacity-50 p-[var(--spacing-xs)] text-body-md"
-                  placeholder="Jelaskan detail barangmu..."
-                  rows={4}
-                />
-              </div>
-
-              <div>
-                <label className="block text-label-md mb-[var(--spacing-xs)] text-on-surface-variant">Spesifikasi</label>
-                <textarea
-                  name="specifications"
-                  value={formData.specifications}
-                  onChange={handleChange}
-                  className="w-full border-outline-variant rounded-[var(--radius-lg)] focus:ring-2 focus:ring-primary-container focus:border-primary border-opacity-50 p-[var(--spacing-xs)] text-body-md"
-                  placeholder="Contoh: Resolusi 24MP, WiFi Built-in, Lensa Kit 18-55mm"
-                  rows={3}
-                />
-              </div>
-
-              <div className="flex flex-col md:flex-row gap-[var(--spacing-md)] pt-[var(--spacing-md)]">
-                <button
-                  type="submit"
-                  onClick={handleSubmit}
-                  className="flex-1 bg-primary-container text-on-primary-container font-heading text-[18px] py-[var(--spacing-md)] rounded-[var(--radius-xl)] shadow-sm hover:brightness-95 transition-all active:scale-[0.98]"
-                >
-                  Simpan & Publikasikan
-                </button>
-                <Link
-                  to="/admin/products"
-                  className="px-[var(--spacing-xl)] border border-outline text-secondary font-heading text-[18px] py-[var(--spacing-md)] rounded-[var(--radius-xl)] hover:bg-surface-container-low transition-all text-center"
-                >
-                  Batal
-                </Link>
-              </div>
-            </form>
+        <aside className="lg:col-span-4 flex flex-col gap-[var(--spacing-lg)]">
+          <div className="rounded-[var(--radius-lg)] bg-primary-container/40 border border-primary/25 p-[var(--spacing-md)]">
+            <div className="flex items-center gap-2 mb-[var(--spacing-sm)]">
+              <span className="material-symbols-outlined text-primary text-[20px]">lightbulb</span>
+              <h3 className="text-label-md text-on-surface">Tips menambahkan barang</h3>
+            </div>
+            <ul className="flex flex-col gap-2">
+              {[
+                'Gunakan foto asli — calon penyewa lebih percaya barang dengan foto nyata.',
+                'Tuliskan kelengkapan dan kondisi minus jika ada.',
+                'Riset harga barang sejenis di kampus agar Kompetitif.',
+              ].map((tip) => (
+                <li key={tip} className="flex items-start gap-2">
+                  <span className="material-symbols-outlined text-primary text-[18px] mt-0.5">check_circle</span>
+                  <span className="text-body-sm text-on-surface-variant">{tip}</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Sidebar */}
-          <div className="lg:col-span-4 space-y-[var(--spacing-lg)]">
-            {/* Image Upload */}
-            <div className="bg-surface-container-lowest p-[var(--spacing-md)] rounded-[var(--radius-xl)] shadow-[0px_4px_20px_rgba(31,41,55,0.04)]">
-              <h3 className="font-heading text-h3 mb-[var(--spacing-md)]">Unggah Gambar</h3>
-              <div className="border-2 border-dashed border-outline-variant rounded-[var(--radius-xl)] p-[var(--spacing-lg)] flex flex-col items-center justify-center text-center cursor-pointer hover:bg-primary-container hover:bg-opacity-5 transition-all">
-                <span className="material-symbols-outlined text-[48px] text-primary mb-[var(--spacing-xs)]">cloud_upload</span>
-                <p className="text-label-md text-on-surface">Klik atau seret foto ke sini</p>
-                <p className="text-caption text-secondary mt-[var(--spacing-xs)]">Maksimal 5MB per foto (JPG, PNG)</p>
-              </div>
-              <div className="grid grid-cols-3 gap-[var(--spacing-xs)] mt-[var(--spacing-md)]">
-                {uploadedImages.map((img) => (
-                  <div key={img.id} className="aspect-square rounded-[var(--radius-lg)] bg-surface-container overflow-hidden relative group">
-                    <img src={img.src} alt="Product" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                      <span className="material-symbols-outlined text-white cursor-pointer">delete</span>
-                    </div>
-                  </div>
-                ))}
-                <div className="aspect-square rounded-[var(--radius-lg)] bg-surface-container border border-outline-variant flex items-center justify-center border-dashed">
-                  <span className="material-symbols-outlined text-outline">add_a_photo</span>
-                </div>
-                <div className="aspect-square rounded-[var(--radius-lg)] bg-surface-container border border-outline-variant flex items-center justify-center border-dashed">
-                  <span className="material-symbols-outlined text-outline">add_a_photo</span>
-                </div>
-              </div>
+          <div className="panel p-[var(--spacing-md)]">
+            <h4 className="text-label-md text-on-surface mb-[var(--spacing-sm)]">Kelengkapan data</h4>
+            <div className="w-full bg-surface-container rounded-full h-1.5 mb-2">
+              <div
+                className="bg-primary h-1.5 rounded-full transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
             </div>
-
-            {/* Tips Card */}
-            <div className="bg-primary-container bg-opacity-10 p-[var(--spacing-md)] rounded-[var(--radius-xl)] border border-primary-container">
-              <div className="flex items-center gap-[var(--spacing-xs)] mb-[var(--spacing-md)]">
-                <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
-                <h3 className="font-heading text-[20px] text-on-primary-container">Tips Menambah Barang</h3>
-              </div>
-              <ul className="space-y-[var(--spacing-xs)]">
-                <li className="flex items-start gap-[var(--spacing-xs)]">
-                  <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-                  <span className="text-body-md text-on-secondary-container"><strong>Gunakan foto asli:</strong> Calon penyewa lebih percaya pada barang dengan foto nyata.</span>
-                </li>
-                <li className="flex items-start gap-[var(--spacing-xs)]">
-                  <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-                  <span className="text-body-md text-on-secondary-container"><strong>Berikan deskripsi detail:</strong> Tuliskan kelengkapan dan kondisi minus jika ada.</span>
-                </li>
-                <li className="flex items-start gap-[var(--spacing-xs)]">
-                  <span className="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-                  <span className="text-body-md text-on-secondary-container"><strong>Tetapkan harga kompetitif:</strong> Riset harga barang serupa di kampusmu.</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Progress/Status */}
-            <div className="bg-surface-container-lowest p-[var(--spacing-md)] rounded-[var(--radius-xl)] shadow-[0px_4px_20px_rgba(31,41,55,0.04)]">
-              <h4 className="text-label-md text-on-surface mb-[var(--spacing-xs)]">Kelengkapan Data</h4>
-              <div className="w-full bg-surface-container rounded-full h-[var(--spacing-base)] mb-[var(--spacing-xs)]">
-                <div className="bg-primary-container h-[var(--spacing-base)] rounded-full" style={{ width: `${progress}%` }} />
-              </div>
-              <p className="text-right text-caption text-primary">{progress}% Selesai</p>
-            </div>
+            <p className="text-right text-caption text-on-surface-variant">{progress}% selesai</p>
           </div>
-        </div>
-      </main>
-    </>
+        </aside>
+      </div>
+    </div>
   );
 }

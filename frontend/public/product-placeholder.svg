@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Foto produk belum tersedia">
+  <rect width="800" height="600" fill="#1A202B"/>
+  <g fill="none" stroke="#3A4356" stroke-width="12" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="250" y="200" width="300" height="220" rx="24"/>
+    <path d="M250 360l90-80 70 60 60-50 80 70"/>
+  </g>
+  <circle cx="340" cy="265" r="24" fill="#3A4356"/>
+</svg>

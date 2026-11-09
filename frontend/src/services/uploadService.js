@@ -1,49 +1,35 @@
-import api from './api';
+import api from '../lib/api';
 
 const UPLOAD_URL = '/upload';
 
+const multipart = { headers: { 'Content-Type': 'multipart/form-data' } };
+
 export const uploadService = {
-  // Upload single image
-  uploadImage: async (file, folder = 'products') => {
+  uploadImage: async (file) => {
     const formData = new FormData();
     formData.append('image', file);
-    formData.append('folder', folder);
 
-    const response = await api.post(UPLOAD_URL, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await api.post(UPLOAD_URL, formData, multipart);
     return response.data;
   },
 
-  // Upload multiple images
-  uploadImages: async (files, folder = 'products') => {
+  uploadImages: async (files) => {
     const formData = new FormData();
     files.forEach((file) => {
       formData.append('images', file);
     });
-    formData.append('folder', folder);
 
-    const response = await api.post(`${UPLOAD_URL}/multiple`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await api.post(`${UPLOAD_URL}/multiple`, formData, multipart);
     return response.data;
   },
 
-  // Upload identity document
-  uploadIdentity: async (file, userId) => {
+  // The backend attaches the document to the authenticated user, so no user id
+  // is sent from here.
+  uploadIdentity: async (file) => {
     const formData = new FormData();
     formData.append('identity', file);
-    formData.append('userId', userId);
 
-    const response = await api.post(`${UPLOAD_URL}/identity`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await api.post(`${UPLOAD_URL}/identity`, formData, multipart);
     return response.data;
   },
 };
