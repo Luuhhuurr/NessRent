@@ -30,6 +30,9 @@ backend/uploads/
 .DS_Store
 Thumbs.db
 
+# Local agent settings (machine-specific, may contain credentials)
+.claude/
+
 # Test / cache
 coverage/
 .cache/
